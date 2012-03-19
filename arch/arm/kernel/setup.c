@@ -97,6 +97,8 @@ EXPORT_SYMBOL(system_serial_high);
 unsigned int elf_hwcap __read_mostly;
 EXPORT_SYMBOL(elf_hwcap);
 
+unsigned int boot_reason;
+EXPORT_SYMBOL(boot_reason);
 
 #ifdef MULTI_CPU
 struct processor processor __read_mostly;
@@ -901,6 +903,9 @@ void __init setup_arch(char **cmdline_p)
 
 	parse_early_param();
 
+	if (mdesc->init_very_early)
+		mdesc->init_very_early();
+
 	sanity_check_meminfo();
 	arm_memblock_init(&meminfo, mdesc);
 
@@ -979,6 +984,10 @@ static const char *hwcap_str[] = {
 	"neon",
 	"vfpv3",
 	"vfpv3d16",
+	"tls",
+	"vfpv4",
+	"idiva",
+	"idivt",
 	NULL
 };
 

@@ -757,11 +757,14 @@ int __cfg80211_connect(struct cfg80211_registered_device *rdev,
 	int err;
 
 	ASSERT_WDEV_LOCK(wdev);
-
+#ifndef CONFIG_CFG80211_ALLOW_RECONNECT
 	if (wdev->sme_state != CFG80211_SME_IDLE)
 		return -EALREADY;
 
 	if (WARN_ON(wdev->connect_keys)) {
+#else
+	if (wdev->connect_keys) {
+#endif
 		kfree(wdev->connect_keys);
 		wdev->connect_keys = NULL;
 	}

@@ -157,8 +157,8 @@ __cacheline_aligned_in_smp DEFINE_SEQLOCK(xtime_lock);
  * - wall_to_monotonic is no longer the boot time, getboottime must be
  * used instead.
  */
-static struct timespec xtime __attribute__ ((aligned (16)));
-static struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+struct timespec xtime __attribute__ ((aligned(16)));
+struct timespec wall_to_monotonic __attribute__ ((aligned(16)));
 static struct timespec total_sleep_time;
 
 /*
