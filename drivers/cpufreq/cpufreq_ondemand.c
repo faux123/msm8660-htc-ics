@@ -582,7 +582,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		}
 		if (dbs_tuners_ins.two_phase_freq != 0 && phase == 0) {
 			/* idle phase */
-			dbs_freq_increase(policy, dbs_tuners_ins.two_phase_freq);
+			dbs_freq_increase(policy,
+				(((dbs_tuners_ins.two_phase_freq)> (int)(policy->max*80/100))
+					?(dbs_tuners_ins.two_phase_freq) : (int)(policy->max*80/100))  );
 		} else {
 			/* busy phase */
 			if (policy->cur < policy->max)
