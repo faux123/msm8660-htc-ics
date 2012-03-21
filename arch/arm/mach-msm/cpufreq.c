@@ -235,6 +235,8 @@ static int msm_cpufreq_suspend(void)
 		per_cpu(cpufreq_suspend, cpu).device_suspended = 1;
 		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
 	}
+	if (num_online_cpus() > 1)
+		cpu_down(1);
 
 	return NOTIFY_DONE;
 }
@@ -246,6 +248,8 @@ static int msm_cpufreq_resume(void)
 	for_each_possible_cpu(cpu) {
 		per_cpu(cpufreq_suspend, cpu).device_suspended = 0;
 	}
+	if (num_online_cpus() < 2)
+		cpu_up(1);
 
 	return NOTIFY_DONE;
 }
