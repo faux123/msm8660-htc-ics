@@ -1260,16 +1260,18 @@ CONFIG_WLAN=y
 # CONFIG_LIBRA_SDIOIF is not set
 # CONFIG_ATH_COMMON is not set
 # CONFIG_BCM4329 is not set
-CONFIG_BCM4329_FW_PATH="/system/etc/firmware/fw_bcm4329.bin"
-CONFIG_BCM4329_NVRAM_PATH="/proc/calibration"
-# CONFIG_BCMDHD is not set
+CONFIG_BCMDHD=m
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/proc/calibration"
+CONFIG_DHD_USE_STATIC_BUF=y
+CONFIG_DHD_USE_SCHED_SCAN=y
 # CONFIG_HOSTAP is not set
 # CONFIG_IWM is not set
 # CONFIG_LIBERTAS is not set
 # CONFIG_WL12XX_PLATFORM_DATA is not set
 # CONFIG_MWIFIEX is not set
 # CONFIG_QUALCOMM_WLAN is not set
-CONFIG_BCM4329_248=m
+# CONFIG_BCM4329_248 is not set
 # CONFIG_BCM4330B2 is not set
 
 #
