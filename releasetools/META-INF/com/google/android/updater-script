@@ -1,0 +1,47 @@
+ui_print("-Checking Model ID");
+assert(getprop("ro.product.device") == "pyramid" || getprop("ro.build.product") == "pyramid" || getprop("ro.product.board") == "pyramid");
+ui_print("-Success!");
+ui_print("-Model ID - HTC Pyramid");
+ui_print("-Ok to proceed");
+
+ui_print("  ");
+ui_print("  ");
+ui_print("  ");
+ui_print("  ");
+ui_print("Welcome to osp-stock");
+ui_print("  ");
+ui_print("  ");
+
+ui_print("Extracting files ...");
+package_extract_dir("kernel", "/tmp");
+set_perm(0, 0, 0777, "/tmp/dd");
+set_perm(0, 0, 0777, "/tmp/modclean.sh");
+set_perm(0, 0, 0777, "/tmp/mkbootimg.sh");
+set_perm(0, 0, 0777, "/tmp/mkbootimg");
+set_perm(0, 0, 0777, "/tmp/unpackbootimg");
+
+ui_print("Deleting Old Modules...");
+set_progress(1.000000);
+run_program("/sbin/busybox", "mount", "/system");
+run_program("/tmp/modclean.sh");
+
+ui_print("Copying Modules...");
+package_extract_dir("system", "/system");
+set_perm_recursive(0, 2000, 0755, 0755, "/system/etc/init.d");
+unmount("/system");
+
+ui_print("Repack boot.img...");
+run_program("/tmp/dd", "if=/dev/block/mmcblk0p20", "of=/tmp/boot.img");;
+run_program("/tmp/unpackbootimg", "/tmp/boot.img", "/tmp/");
+run_program("/tmp/mkbootimg.sh");
+
+ui_print("Flashing New boot.img ...");
+assert(write_raw_image("/tmp/newboot.img", "boot"),
+       delete("/tmp/boot.img"));
+
+ui_print("Wiping /cache");
+unmount("/cache");
+format("ext4", "EMMC", "/dev/block/mmcblk0p24");
+
+ui_print(" ");
+ui_print("Done");
