@@ -866,6 +866,9 @@ static irqreturn_t cy8c_ts_irq_thread(int irq, void *ptr)
 			base = 3;
 		}
 
+		/* reset sameFilter */
+		ts->sameFilter[2] = ts->sameFilter[0] = ts->sameFilter[1] = -1;
+
 		for (loop_i = 0; loop_i < ts->finger_count; loop_i++) {
 			if (!(ts->grip_suppression & BIT(loop_i))) {
 				if (ts->flag_htc_event == 0) {
