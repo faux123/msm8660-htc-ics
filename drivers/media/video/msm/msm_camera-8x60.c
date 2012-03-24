@@ -4145,6 +4145,16 @@ static int msm_open_common(struct inode *inode, struct file *filep,
 	return rc;
 }
 
+static int msm_open_frame(struct inode *inode, struct file *filep) 
+{
+
+	struct msm_cam_device *pmsm = 
+	container_of(inode->i_cdev, struct msm_cam_device, cdev); 
+	msm_queue_drain(&pmsm->sync->frame_q, list_frame); 
+	return msm_open_common(inode, filep, 1, 0); 
+
+}
+
 static int msm_open(struct inode *inode, struct file *filep)
 {
 	return msm_open_common(inode, filep, 1, 0);
@@ -4240,7 +4250,7 @@ static const struct file_operations msm_fops_control = {
 
 static const struct file_operations msm_fops_frame = {
 	.owner = THIS_MODULE,
-	.open = msm_open,
+	.open = msm_open_frame,
 	.unlocked_ioctl = msm_ioctl_frame,
 	.release = msm_release_frame,
 	.poll = msm_poll_frame,
@@ -4249,7 +4259,7 @@ static const struct file_operations msm_fops_frame = {
 #ifdef CONFIG_CAMERA_ZSL
 static const struct file_operations msm_fops_pic = {
 	.owner = THIS_MODULE,
-	.open = msm_open,
+	.open = msm_open_frame,
 	.unlocked_ioctl = msm_ioctl_pic,
 	.release = msm_release_pic,
 	.poll = msm_poll_pic,
