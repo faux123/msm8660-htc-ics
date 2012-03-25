@@ -8,7 +8,7 @@ ui_print("  ");
 ui_print("  ");
 ui_print("  ");
 ui_print("  ");
-ui_print("Welcome to osp-stock");
+ui_print("Welcome to Faux123 AOSP");
 ui_print("  ");
 ui_print("  ");
 
@@ -25,11 +25,9 @@ set_progress(1.000000);
 run_program("/sbin/busybox", "mount", "/system");
 run_program("/tmp/modclean.sh");
 
-ui_print("Copying Modules & thermald.conf...");
-delete("/system/etc/thermald.conf");
+ui_print("Copying Modules...");
 package_extract_dir("system", "/system");
 set_perm_recursive(0, 2000, 0755, 0755, "/system/etc/init.d");
-set_perm_recursive(0, 2000, 0644, 0644, "/system/etc/thermald.conf");
 unmount("/system");
 
 ui_print("Repack boot.img...");
