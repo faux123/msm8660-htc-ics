@@ -68,7 +68,7 @@ static int __init mipi_cmd_orise_blue_qhd_pt_init(void)
 
 	pinfo.bl_max = 255;
 	pinfo.bl_min = 1;
-	pinfo.fb_num = 3;
+	pinfo.fb_num = 2;
 	pinfo.clk_rate = 482000000;
 
 	pinfo.lcd.vsync_enable = TRUE;
