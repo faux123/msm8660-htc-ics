@@ -312,8 +312,6 @@ static int msm_cpufreq_resume(void)
 	for_each_possible_cpu(cpu) {
 		per_cpu(cpufreq_suspend, cpu).device_suspended = 0;
 	}
-	if (num_online_cpus() < 2)
-		cpu_up(1);
 
 	return NOTIFY_DONE;
 }
