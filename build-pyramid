@@ -5,7 +5,7 @@
 # Installer script by showp1984
 
 CCOMPILER=~/android/OpenSensation/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
-TYPE=Faux123-v001-AOSP
+TYPE=Faux123-v002-b3-AOSP
 CONFIG=faux_msm8660_defconfig
 
 cleanup()
