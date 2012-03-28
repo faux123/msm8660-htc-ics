@@ -1,6 +1,7 @@
 /*
    BlueZ - Bluetooth protocol stack for Linux
    Copyright (C) 2000-2001 Qualcomm Incorporated
+   Copyright (c) 2011, Code Aurora Forum. All rights reserved.
 
    Written 2000,2001 by Maxim Krasnyansky <maxk@qualcomm.com>
 
@@ -37,6 +38,8 @@
 struct sockaddr_sco {
 	sa_family_t	sco_family;
 	bdaddr_t	sco_bdaddr;
+	__u16		sco_pkt_type;
+	__s8		is_wbs;
 };
 
 /* SCO socket options */
@@ -72,7 +75,8 @@ struct sco_conn {
 
 struct sco_pinfo {
 	struct bt_sock	bt;
-	__u32		flags;
+	__u16		pkt_type;
+
 	struct sco_conn	*conn;
 };
 
