@@ -184,10 +184,6 @@ static void pm8058_drvx_led_brightness_set(struct led_classdev *led_cdev,
 		milliamps = (ldata->flags & PM8058_LED_DYNAMIC_BRIGHTNESS_EN) ?
 			    ldata->out_current * brightness / LED_FULL :
 			    ldata->out_current;
-
-		pr_info("%s: flags %d current %d\n", __func__,
-			ldata->flags, milliamps);
-
 		pm8058_pwm_config_led(ldata->pwm_led, id, mode, milliamps);
 		if (ldata->flags & PM8058_LED_LTU_EN) {
 			pduties = &duties[ldata->start_index];
