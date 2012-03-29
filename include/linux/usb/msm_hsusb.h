@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2008 Google, Inc.
  * Author: Brian Swetland <swetland@google.com>
- * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -23,6 +23,7 @@
 #include <linux/wakelock.h>
 #include <mach/board.h>
 #include <mach/msm_xo.h>
+#include <linux/pm_qos_params.h>
 
 /**
  * Supported USB modes
@@ -143,8 +144,6 @@ enum usb_chg_type {
  * @otg_control: OTG switch controlled by user/Id pin
  * @default_mode: Default operational mode. Applicable only if
  *              OTG switch is controller by user.
- * @pclk_src_name: pclk is derived from ebi1_usb_clk in case of 7x27 and 8k
- *              dfab_usb_hs_clk in case of 8660 and 8960.
  * @pmic_id_irq: IRQ number assigned for PMIC USB ID line.
  * @mhl_enable: indicates MHL connector or not.
  * @ido_3v3_name: the regulator provide 3.075(3.3)V to PHY
@@ -153,6 +152,7 @@ enum usb_chg_type {
  *		detection block in 28nm/45nm PHY
  * @phy_notify_enabled: even in OTG_PMIC_CONTROL, still force enabled phy
  *		interrupt and deliver the notification
+ * @swfi_latency: miminum latency to allow swfi.
  */
 struct msm_otg_platform_data {
 	int *phy_init_seq;
@@ -163,16 +163,18 @@ struct msm_otg_platform_data {
 	enum usb_mode_type default_mode;
 	enum msm_usb_phy_type phy_type;
 	void (*setup_gpio)(enum usb_otg_state state);
-	const char *pclk_src_name;
 	int pmic_id_irq;
 	bool mhl_enable;
 	char *ldo_3v3_name;
 	char *ldo_1v8_name;
 	char *vddcx_name;
+	u32 swfi_latency;
 	/* This flag is against the condition that PHY fail into lpm when DCP is attached. */
 	int reset_phy_before_lpm;
 	bool phy_notify_enabled;
 	void (*usb_uart_switch)(int uart);
+	int (*rpc_connect)(int connect);
+	int (*phy_reset)(void);
 };
 
 /**
@@ -180,13 +182,11 @@ struct msm_otg_platform_data {
  * @otg: USB OTG Transceiver structure.
  * @pdata: otg device platform data.
  * @irq: IRQ number assigned for HSUSB controller.
- * @clk: clock struct of usb_hs_clk.
- * @pclk: clock struct of usb_hs_pclk.
- * @pclk_src: pclk source for voting.
- * @phy_reset_clk: clock struct of usb_phy_clk.
- * @core_clk: clock struct of usb_hs_core_clk.
- * @system_clk: clock struct of usb_system_clk.
- * @regs: ioremapped register base address.
+ * @clk: clock struct of alt_core_clk.
+ * @pclk: clock struct of iface_clk.
+ * @phy_reset_clk: clock struct of phy_clk.
+ * @core_clk: clock struct of core_bus_clk.
+* @regs: ioremapped register base address.
  * @inputs: OTG state machine inputs(Id, SessValid etc).
  * @sm_work: OTG state machine work.
  * @in_lpm: indicates low power mode (LPM) state.
@@ -203,6 +203,8 @@ struct msm_otg_platform_data {
  *             connected. Useful only when ACA_A charger is
  *             connected.
  * @mA_port: The amount of current drawn by the attached B-device.
+ * @pm_qos_req_dma: miminum DMA latency to vote against idle power
+	collapse when cable is connected.
  * @id_timer: The timer used for polling ID line to detect ACA states.
  */
 struct msm_otg {
@@ -211,10 +213,8 @@ struct msm_otg {
 	int irq;
 	struct clk *clk;
 	struct clk *pclk;
-	struct clk *pclk_src;
 	struct clk *phy_reset_clk;
 	struct clk *core_clk;
-	struct clk *system_clk;
 	void __iomem *regs;
 #define ID		0
 #define B_SESS_VLD	1
@@ -266,6 +266,7 @@ struct msm_otg {
 	int ac_detect_count;
 
 	struct msm_xo_voter *xo_handle; /*handle to vote for PXO buffer*/
+	struct pm_qos_request_list pm_qos_req_dma;
 	int reset_phy_before_lpm;
 
 	void (*vbus_notification_cb)(int online);

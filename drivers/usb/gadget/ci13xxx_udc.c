@@ -227,11 +227,6 @@ static void hw_cwrite(u32 addr, u32 mask, u32 data)
 		  addr + hw_bank.cap);
 }
 
-static void hw_cwrite_no_mask(u32 addr, u32 data)
-{
-	iowrite32(data, addr + hw_bank.cap);
-}
-
 /**
  * hw_ctest_and_clear: tests & clears register bitfield
  * @addr: address relative to CAP offset plus content
@@ -1399,7 +1394,7 @@ static ssize_t prime_ept(struct device *dev,
 
 	wmb();
 
-	hw_cwrite_no_mask(CAP_ENDPTPRIME, BIT(n));
+	hw_cwrite(CAP_ENDPTPRIME, BIT(n), BIT(n));
 	while (hw_cread(CAP_ENDPTPRIME, BIT(n)))
 		cpu_relax();
 
@@ -1670,7 +1665,7 @@ static int _hardware_enqueue(struct ci13xxx_ep *mEp, struct ci13xxx_req *mReq)
 			mReq->ptr->token  |= TD_IOC;
 	}
 	mReq->ptr->page[0]  = mReq->req.dma;
-	for (i = 1; i < 4; i++)
+	for (i = 1; i < 5; i++)
 		mReq->ptr->page[i] =
 			(mReq->req.dma + i * CI13XXX_PAGE_SIZE) & ~TD_RESERVED_MASK;
 
@@ -2105,8 +2100,7 @@ dequeue:
 				req_dequeue = 0;
 				udc->dTD_update_fail_count++;
 				mEp->dTD_update_fail_count++;
-				/* FIXME: QCT HW guys suggest to delay 1ms */
-				mdelay(1);
+				udelay(10);
 				goto dequeue;
 			}
 			break;

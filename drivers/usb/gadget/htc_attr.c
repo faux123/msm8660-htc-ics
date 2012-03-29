@@ -319,7 +319,7 @@ int android_switch_function(unsigned func)
 		else if ((func & (1 << USB_FUNCTION_RNDIS)) &&
 				!strcmp(f->name, "rndis")) {
 			list_add_tail(&f->enabled_list, &dev->enabled_functions);
-			intrsharing = (func >> USB_FUNCTION_RNDIS_IPT) & 1;
+			intrsharing = !((func >> USB_FUNCTION_RNDIS_IPT) & 1);
 		} else if ((func & (1 << USB_FUNCTION_DIAG)) &&
 				!strcmp(f->name, "diag")) {
 			list_add_tail(&f->enabled_list, &dev->enabled_functions);
@@ -592,6 +592,32 @@ static ssize_t store_usb_phy_setting(struct device *dev,
 	return otg_store_usb_phy_setting(buf, count);
 }
 
+#if (defined(CONFIG_USB_OTG) && defined(CONFIG_USB_OTG_HOST))
+void msm_otg_set_id_state(int id);
+static ssize_t store_usb_host_mode(struct device *dev,
+                struct device_attribute *attr,
+                const char *buf, size_t count)
+{
+	unsigned u, enable;
+	ssize_t  ret;
+
+	ret = strict_strtoul(buf, 10, (unsigned long *)&u);
+	if (ret < 0) {
+		USB_ERR("%s: %d\n", __func__, ret);
+		return 0;
+	}
+
+	enable = u ? 1 : 0;
+	msm_otg_set_id_state(!enable);
+
+	USB_INFO("%s USB host\n", enable ? "Enable" : "Disable");
+
+	return count;
+}
+static DEVICE_ATTR(host_mode, 0220,
+		NULL, store_usb_host_mode);
+#endif
+
 static DEVICE_ATTR(usb_cable_connect, 0444, show_usb_cable_connect, NULL);
 static DEVICE_ATTR(usb_function_switch, 0664,
 		show_usb_function_switch, store_usb_function_switch);
@@ -612,6 +638,9 @@ static struct attribute *android_htc_usb_attributes[] = {
 	&dev_attr_dummy_usb_serial_number.attr, /* for MFG */
 	&dev_attr_usb_car_kit_enable.attr,
 	&dev_attr_usb_phy_setting.attr,
+#if (defined(CONFIG_USB_OTG) && defined(CONFIG_USB_OTG_HOST))
+	&dev_attr_host_mode.attr,
+#endif
 	NULL
 };
 
