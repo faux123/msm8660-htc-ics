@@ -26,6 +26,7 @@
 #define LED_BUFF_SIZE 50
 
 static struct class *leds_class;
+static struct workqueue_struct *leds_workqueue;
 
 void led_brightness_switch(const char * const led_name,  enum led_brightness brightness)
 {
@@ -75,7 +76,7 @@ int queue_brightness_change(struct led_classdev *led_cdev,
 
 	INIT_WORK(&(brightness_change->brightness_change_work),
 		change_brightness);
-	queue_work(suspend_work_queue,
+	queue_work(leds_workqueue,
 		&(brightness_change->brightness_change_work));
 
 	return 0;
@@ -410,12 +411,17 @@ static int __init leds_init(void)
 	leds_class->suspend = led_suspend;
 	leds_class->resume = led_resume;
 	leds_class->dev_attrs = led_class_attrs;
+
+	/* create an ordered workqueue to process every call to sysfs */
+	leds_workqueue = alloc_ordered_workqueue("leds_wq", 0);
+
 	return 0;
 }
 
 static void __exit leds_exit(void)
 {
 	class_destroy(leds_class);
+	destroy_workqueue(leds_workqueue);
 }
 
 subsys_initcall(leds_init);

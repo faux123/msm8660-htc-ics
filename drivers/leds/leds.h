@@ -20,14 +20,13 @@
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 
-extern struct workqueue_struct *suspend_work_queue;
 extern int queue_brightness_change(struct led_classdev *led_cdev,
-	enum led_brightness value);
+       enum led_brightness value);
 
 struct deferred_brightness_change {
-	struct work_struct brightness_change_work;
-	struct led_classdev *led_cdev;
-	enum led_brightness value;
+       struct work_struct brightness_change_work;
+       struct led_classdev *led_cdev;
+       enum led_brightness value;
 };
 
 #endif
@@ -43,9 +42,13 @@ static inline void led_set_brightness(struct led_classdev *led_cdev,
 		value -= led_cdev->offset;
 
 	if (!(led_cdev->flags & LED_SUSPENDED)) {
+		/* [FIXME -- workaround] backlight: go for workqueue, others: direct call */
+		if (!strcmp(led_cdev->name, "lcd-backlight")) {
 #ifdef CONFIG_HAS_EARLYSUSPEND
-		if (queue_brightness_change(led_cdev, value) != 0)
+			if (queue_brightness_change(led_cdev, value) != 0)
 #endif
+			led_cdev->brightness_set(led_cdev, value);
+		} else
 			led_cdev->brightness_set(led_cdev, value);
 	}
 }
