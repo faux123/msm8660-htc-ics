@@ -658,10 +658,12 @@ void __cfg80211_disconnected(struct net_device *dev, const u8 *ie,
 	if (WARN_ON(wdev->iftype != NL80211_IFTYPE_STATION &&
 		    wdev->iftype != NL80211_IFTYPE_P2P_CLIENT))
 		return;
-
+/*HTC_WIFI_START*/
+/*we need send hang to supplicant
 	if (wdev->sme_state != CFG80211_SME_CONNECTED)
 		return;
-
+*/
+/*HTC_WIFI_END*/
 	if (wdev->current_bss) {
 		cfg80211_unhold_bss(wdev->current_bss);
 		cfg80211_put_bss(&wdev->current_bss->pub);
