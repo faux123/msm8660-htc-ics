@@ -642,10 +642,12 @@ static int update_voltage(struct regulator *regulator, int min_uV, int max_uV)
 	}
 
 	ret = _regulator_do_set_voltage(rdev, min_uV, max_uV);
+	/* HTC marked: It's a coding error and we don't need it.
 	if (!ret)
 		goto out;
 
 	_notifier_call_chain(rdev, REGULATOR_EVENT_VOLTAGE_CHANGE, NULL);
+	*/
 
 out:
 	return ret;
@@ -669,10 +671,12 @@ static int update_voltage_prev(struct regulator_dev *rdev)
 		return 0;
 
 	ret = _regulator_do_set_voltage(rdev, min_uV, max_uV);
+	/* HTC marked: It's a coding error and we don't need it.
 	if (!ret)
 		return ret;
 
 	_notifier_call_chain(rdev, REGULATOR_EVENT_VOLTAGE_CHANGE, NULL);
+	*/
 
 	return ret;
 }
