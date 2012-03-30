@@ -135,6 +135,7 @@ static inline int msm_rpm_clear_nosleep(
 }
 
 void msm_rpm_print_sleep_tick(void);
+void msm_rpm_check_rtc(void);
 int msm_rpm_register_notification(struct msm_rpm_notification *n,
 	struct msm_rpm_iv_pair *req, int count);
 int msm_rpm_unregister_notification(struct msm_rpm_notification *n);

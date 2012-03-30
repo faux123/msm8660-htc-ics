@@ -34,6 +34,7 @@
 #include <mach/msm_iomap.h>
 #include <mach/rpm.h>
 #include <mach/board_htc.h>
+#include <linux/rtc.h>
 
 
 /******************************************************************************
@@ -537,6 +538,42 @@ void msm_rpm_print_sleep_tick(void)
 	pr_info("MPM_SLEEP_TICK: %llums\n", ((uint64_t)(*mpm_sleep_tick) * 1000) >> 15);
 }
 EXPORT_SYMBOL(msm_rpm_print_sleep_tick);
+
+void msm_rpm_check_rtc(void)
+{
+	uint32_t *mpm_sleep_tick = (void *) (MSM_RPM_MPM_BASE + 0x24);
+	static ulong rpm_time_record = 0, rtc_time_record = 0;
+	ulong rpm_time_diff, rtc_time_diff;
+	struct timespec ts;
+
+	getnstimeofday(&ts);
+
+	pr_info("[RTC_DEBUG] MPM_RPM_TICK: %llums\n", ((uint64_t)(*mpm_sleep_tick) * 1000) >> 15);
+
+	if (likely(rpm_time_record)) {
+		if (ts.tv_sec > rtc_time_record) {
+			rpm_time_diff = (ulong)(((uint64_t)(*mpm_sleep_tick) * 1000) >> 15) / 1000 - rpm_time_record;
+			rtc_time_diff = ts.tv_sec - rtc_time_record;
+			if ((rpm_time_diff > rtc_time_diff && (rpm_time_diff - rtc_time_diff) > 5)
+				|| (rpm_time_diff < rtc_time_diff && (rtc_time_diff - rpm_time_diff) > 5)) {
+				printk("[RTC_DEBUG] RTC TIME Change!!!\n");
+				printk("[RTC_DEBUG] Last RTC[%lu], Now RTC[%lu]\n", rtc_time_record, ts.tv_sec);
+				printk("[RTC_DEBUG] Last RPM[%lu], Diff[%lu]\n", rpm_time_record, rpm_time_diff);
+			}
+			else {
+				printk("[RTC_DEBUG] RTC TIME OK!\n");
+				printk("[RTC_DEBUG] Last RTC[%lu], Now RTC[%lu]\n", rtc_time_record, ts.tv_sec);
+				printk("[RTC_DEBUG] Last RPM[%lu], Diff[%lu]\n", rpm_time_record, rpm_time_diff);
+			}
+		} else {
+			printk("[RTC_DEBUG] RTC TIME Changes!!!\n");
+			printk("[RTC_DEBUG] Last RTC[%lu], Now RTC[%lu]\n", rtc_time_record, ts.tv_sec);
+		}
+	}
+	rpm_time_record = (ulong)(((uint64_t)(*mpm_sleep_tick) * 1000) >> 15) / 1000;
+	rtc_time_record = ts.tv_sec;
+}
+EXPORT_SYMBOL(msm_rpm_check_rtc);
 
 int msm_rpm_local_request_is_outstanding(void)
 {

@@ -37,6 +37,7 @@
 #include <linux/android_alarm.h>
 #include <linux/suspend.h>
 #include <linux/earlysuspend.h>
+#include <mach/rpm.h>
 
 #define BATT_SUSPEND_CHECK_TIME			3600
 #define BATT_TIMER_CHECK_TIME			360
@@ -219,6 +220,7 @@ static int batt_set_voltage_alarm_mode(int mode)
 	case BATT_ALARM_CRITICAL_MODE:
 		rc = batt_set_voltage_alarm(BATT_CRITICAL_LOW_VOLTAGE,
 			alarm_data.upper_threshold);
+		msm_rpm_check_rtc();
 	break;
 	default:
 	case BATT_ALARM_NORMAL_MODE:
