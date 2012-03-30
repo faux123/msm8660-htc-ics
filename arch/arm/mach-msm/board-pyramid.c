@@ -3395,6 +3395,7 @@ static struct platform_device *pyramid_devices[] __initdata = {
 	&msm8660_device_watchdog,
 
 	&msm8660_cpu_idle_device,
+	&msm8660_msm_gov_device,
 };
 
 static struct memtype_reserve msm8x60_reserve_table[] __initdata = {

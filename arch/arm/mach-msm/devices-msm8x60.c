@@ -60,6 +60,7 @@
 #include "rpm_stats.h"
 #include "mpm.h"
 #include <mach/msm_watchdog.h>
+#include <mach/msm_dcvs.h>
 
 /* Address of GSBI blocks */
 #define MSM_GSBI1_PHYS	0x16000000
@@ -2964,3 +2965,41 @@ struct platform_device msm8660_cpu_idle_device = {
 		.platform_data = &msm8660_LPM_latency,
 	},
 };
+
+static struct msm_dcvs_freq_entry msm8660_freq[] = {
+	{ 384000, 166981,  345600},
+	{ 702000, 213049,  632502},
+	{1026000, 285712,  925613},
+	{1242000, 383945, 1176550},
+	{1458000, 419729, 1465478},
+	{1512000, 434116, 1546674},
+
+};
+
+static struct msm_dcvs_core_info msm8660_core_info = {
+	.freq_tbl = &msm8660_freq[0],
+	.core_param = {
+		.max_time_us = 100000,
+		.num_freq = ARRAY_SIZE(msm8660_freq),
+	},
+	.algo_param = {
+		.slack_time_us = 58000,
+		.scale_slack_time = 0,
+		.scale_slack_time_pct = 0,
+		.disable_pc_threshold = 1458000,
+		.em_window_size = 100000,
+		.em_max_util_pct = 97,
+		.ss_window_size = 1000000,
+		.ss_util_pct = 95,
+		.ss_iobusy_conv = 100,
+	},
+};
+
+struct platform_device msm8660_msm_gov_device = {
+	.name = "msm_dcvs_gov",
+	.id = -1,
+	.dev = {
+		.platform_data = &msm8660_core_info,
+	},
+};
+
