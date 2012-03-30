@@ -26,7 +26,12 @@
 #include <mach/msm_rpcrouter.h>
 #include <mach/oem_rapi_client.h>
 
+#ifdef CONFIG_MACH_HOLIDAY
+#define OEM_RAPI_PROG  0x3001006B
+#endif
+#ifdef CONFIG_MACH_PYRAMID
 #define OEM_RAPI_PROG  0x3000006B
+#endif
 #define OEM_RAPI_VERS  0x00010001
 
 #define OEM_RAPI_NULL_PROC                        0

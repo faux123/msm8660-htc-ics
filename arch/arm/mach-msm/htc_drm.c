@@ -21,9 +21,9 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
-#ifndef MSM_7x30
+#ifndef CONFIG_ARCH_MSM7X30
 #include <mach/scm.h>
-#else	/* MSM_7x30 */
+#else	/* CONFIG_ARCH_MSM7X30 */
 #include <linux/platform_device.h>
 #include <linux/types.h>
 #include <linux/errno.h>
@@ -45,7 +45,7 @@
 #define OEM_RAPI_STREAMING_FUNCTION_PROC          2
 
 #define OEM_RAPI_CLIENT_MAX_OUT_BUFF_SIZE 128
-#endif	/* MSM_7x30 */
+#endif	/* CONFIG_ARCH_MSM7X30 */
 
 #define DEVICE_NAME "htcdrm"
 
@@ -62,7 +62,7 @@
 #define PERR(fmt, args...) printk(KERN_ERR "%s(%i, %s): " fmt "\n", \
 		__func__, current->pid, current->comm, ## args)
 
-#ifndef MSM_7x30
+#ifndef CONFIG_ARCH_MSM7X30
 #define UP(S)
 #else
 #define UP(S) up(S)
@@ -88,7 +88,7 @@ enum {
 		HTC_OEMCRYPTO_IS_KEYBOX_VALID,
 };
 
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 struct htc_keybox_dev {
 	struct platform_device *pdev;
 	struct cdev cdev;
@@ -361,7 +361,7 @@ static ssize_t htc_keybox_write(struct htc_keybox_dev *dev, const char *buf, siz
 	return 0;
 }
 static struct htc_keybox_dev *keybox_dev;
-#endif /* MSM_7x30 */
+#endif /* CONFIG_ARCH_MSM7X30 */
 
 static unsigned char *htc_device_id;
 static unsigned char *htc_keybox;
@@ -379,13 +379,13 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 			PERR("copy_from_user error (msg)");
 			return -EFAULT;
 		}
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 		oem_rapi_client_init();
 		if (down_interruptible(&keybox_dev->sem)) {
 			PERR("interrupt error");
 			return -EFAULT;
 		}
-#endif /* MSM_7x30 */
+#endif /* CONFIG_ARCH_MSM7X30 */
 		PDEBUG("func = %x\n", hmsg.func);
 		switch (hmsg.func) {
 		case HTC_OEMCRYPTO_STORE_KEYBOX:
@@ -399,14 +399,14 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 				UP(&keybox_dev->sem);
 				return -EFAULT;
 			}
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 			memcpy(keybox_dev->keybox_buf, htc_keybox, WIDEVINE_KEYBOX_LEN);
 			ret = htc_keybox_write(keybox_dev, htc_keybox, hmsg.req_len, hmsg.offset);
 			oem_rapi_client_close();
 #else
 			ret = secure_access_item(1, ITEM_KEYBOX_PROVISION, hmsg.req_len,
 					htc_keybox);
-#endif	/* MSM_7x30 */
+#endif	/* CONFIG_ARCH_MSM7X30 */
 			if (ret)
 				PERR("provision keybox failed (%d)\n", ret);
 			UP(&keybox_dev->sem);
@@ -418,14 +418,14 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 				UP(&keybox_dev->sem);
 				return -EFAULT;
 			}
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 			ret = htc_keybox_read(keybox_dev, htc_keybox, hmsg.resp_len, hmsg.offset);
 			oem_rapi_client_close();
 			htc_keybox = keybox_dev->keybox_buf;
 #else
 			ret = secure_access_item(0, ITEM_KEYBOX_DATA, WIDEVINE_KEYBOX_LEN,
 					htc_keybox);
-#endif	/* MSM_7x30 */
+#endif	/* CONFIG_ARCH_MSM7X30 */
 			if (ret)
 				PERR("get keybox failed (%d)\n", ret);
 			else {
@@ -444,14 +444,14 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 				return -EFAULT;
 			}
 
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 			ret = htc_keybox_read(keybox_dev, htc_device_id, hmsg.resp_len, hmsg.offset);
 			oem_rapi_client_close();
 			htc_device_id = keybox_dev->keybox_buf;
 #else
 			ret = secure_access_item(0, ITEM_DEVICE_ID, DEVICE_ID_LEN,
 					htc_device_id);
-#endif	/* MSM_7x30 */
+#endif	/* CONFIG_ARCH_MSM7X30 */
 			if (ret)
 				PERR("get device ID failed (%d)\n", ret);
 			else {
@@ -475,7 +475,7 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 				UP(&keybox_dev->sem);
 				return -1;
 			}
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 			get_random_bytes(ptr, hmsg.resp_len);
 			printk(KERN_INFO "%s: Data get from random entropy ", __func__);
 #else
@@ -483,7 +483,7 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 			/* FIXME: second time of this function call will hang
 			ret = secure_access_item(0, ITEM_RAND_DATA, hmsg.resp_len, ptr);
 			*/
-#endif	/* MSM_7x30 */
+#endif	/* CONFIG_ARCH_MSM7X30 */
 			if (ret)
 				PERR("get random data failed (%d)\n", ret);
 			else {
@@ -498,7 +498,9 @@ static long htcdrm_ioctl(struct file *file, unsigned int command, unsigned long 
 			kfree(ptr);
 			break;
 		case HTC_OEMCRYPTO_IS_KEYBOX_VALID:
+#ifndef CONFIG_ARCH_MSM7X30
 			ret = secure_access_item(0, ITEM_VALIDATE_KEYBOX, WIDEVINE_KEYBOX_LEN, NULL);
+#endif
 			UP(&keybox_dev->sem);
 			return ret;
 		default:
@@ -549,7 +551,7 @@ static int __init htcdrm_init(void)
 	htcdrm_class = class_create(THIS_MODULE, "htcdrm");
 	device_create(htcdrm_class, NULL, MKDEV(htcdrm_major, 0), NULL, DEVICE_NAME);
 
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 	keybox_dev = kzalloc(sizeof(htc_keybox_dev), GFP_KERNEL);
 	if (keybox_dev == NULL) {
 		PERR("allocate space for keybox_dev failed\n");
@@ -571,7 +573,7 @@ static void  __exit htcdrm_exit(void)
 	unregister_chrdev(htcdrm_major, DEVICE_NAME);
 	kfree(htc_device_id);
 	kfree(htc_keybox);
-#ifdef MSM_7x30
+#ifdef CONFIG_ARCH_MSM7X30
 	kfree(keybox_dev);
 #endif
 	PDEBUG("un-registered module ok\n");

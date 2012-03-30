@@ -114,13 +114,20 @@ endif
 ifdef CONFIG_ARCH_MSM8960
 	obj-y += emmc_partitions.o
 endif
+ifdef CONFIG_MACH_PICO
+        obj-y += nand_partitions.o
+endif
 
 ifeq ($(CONFIG_ARCH_MSM7X30_SMD),y)
 obj-$(CONFIG_ARCH_MSM7X30_SMD) += 7x30-smd/
 else # Else CONFIG_ARCH_MSM7X30_SMD
 obj-y += modem_notifier.o
 obj-$(CONFIG_MSM_SMD_LOGGING) += smem_log.o
+ifeq ($(CONFIG_ARCH_MSM7X27A),y)
+obj-$(CONFIG_MSM_SMD) += smd.o smd_7x2x_debug.o
+else # Else CONFIG_ARCH_MSM7X27A
 obj-$(CONFIG_MSM_SMD) += smd.o smd_debug.o
+endif # End CONFIG_ARCH_MSM7X27A
 obj-$(CONFIG_MSM_SMD_TTY) += smd_tty.o
 obj-$(CONFIG_MSM_SMD_QMI) += smd_qmi.o
 obj-$(CONFIG_MSM_SMD_PKT) += smd_pkt.o
@@ -151,7 +158,8 @@ obj-$(CONFIG_MSM_IPC_ROUTER) += ipc_router.o
 obj-$(CONFIG_MSM_IPC_ROUTER)+= ipc_socket.o
 obj-$(CONFIG_MSM_DALRPC) += dal.o
 obj-$(CONFIG_MSM_DALRPC_TEST) += dal_remotetest.o
-obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o
+#obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o
+obj-$(CONFIG_ARCH_MSM7X30) += dal_axi.o htc_drm.o
 obj-$(CONFIG_ARCH_MSM7X27A) += dal_axi.o
 obj-$(CONFIG_MSM_ADSP) += qdsp5/
 #obj-$(CONFIG_MSM7KV2_AUDIO) += qdsp5v2/
@@ -249,11 +257,12 @@ obj-$(CONFIG_MACH_GOLFU) += board-golfu.o devices-msm7x27a.o devices_htc.o  emmc
 obj-$(CONFIG_MACH_GOLFU) += display/board-golfu-panel.o
 obj-$(CONFIG_MACH_GOLFU) += board-golfu-keypad.o
 obj-$(CONFIG_MACH_GOLFU) += board-golfu-mmc.o
-obj-$(CONFIG_MACH_GOLFU) += htc_bdaddress.o
+obj-$(CONFIG_MACH_GOLFU) += board-golfu-wifi.o
+obj-$(CONFIG_MACH_GOLFU) += htc_bdaddress.o board-bahama.o
 obj-$(CONFIG_MACH_PRIMODD) += board-primodd.o devices-msm7x27a.o devices_htc.o emmc_partitions.o
 obj-$(CONFIG_MACH_PRIMODD) += display/board-primodd-panel.o
 obj-$(CONFIG_MACH_PRIMODD) += board-primodd-keypad.o
-obj-$(CONFIG_MACH_PRIMODD) += board-primodd-mmc.o board-primodd-wifi.o
+obj-$(CONFIG_MACH_PRIMODD) += board-primodd-mmc.o board-primodd-wifi.o htc_wifi_nvs.o
 obj-$(CONFIG_MACH_PRIMODD) += board-primodd-gsm-radio.o
 obj-$(CONFIG_MACH_PRIMODD) += audiogpio.o
 obj-$(CONFIG_MACH_PRIMODD) += board-primodd-rfkill.o htc_fast_clk_7k.o
@@ -430,6 +439,16 @@ obj-$(CONFIG_MACH_BLISS) += board-bliss-keypad.o
 obj-$(CONFIG_MACH_BLISS) += display/bliss-panel.o board-bliss-audio.o
 obj-$(CONFIG_MACH_BLISS) += htc_sleep_clk.o htc_fast_clk_7k.o board-bliss-rfkill.o
 obj-$(CONFIG_MACH_BLISS) += htc_bdaddress.o
+obj-$(CONFIG_MACH_SPADE) += board-spade.o
+obj-$(CONFIG_MACH_SPADE) += board-spade-keypad.o
+obj-$(CONFIG_MACH_SPADE) += display/spade-panel.o
+obj-$(CONFIG_MACH_SPADE) += htc_sleep_clk.o htc_fast_clk_7k.o
+obj-$(CONFIG_MACH_SPADE) += htc_bdaddress.o
+obj-$(CONFIG_MACH_MECHA) += board-mecha.o
+obj-$(CONFIG_MACH_MECHA) += board-mecha-keypad.o
+obj-$(CONFIG_MACH_MECHA) += display/mecha-panel.o board-mecha-audio.o
+obj-$(CONFIG_MACH_MECHA) += htc_sleep_clk.o htc_fast_clk_7k.o
+obj-$(CONFIG_MACH_MECHA) += htc_bdaddress.o
 obj-$(CONFIG_MACH_PRIMOU) += board-primou.o
 obj-$(CONFIG_MACH_PRIMOU) += display/primou-panel.o board-primou-audio.o
 obj-$(CONFIG_MACH_PRIMOU) += board-primou-keypad.o
@@ -458,7 +477,7 @@ else
 obj-$(CONFIG_MACH_KINGDOM) += board-kingdom-mmc.o board-kingdom-wifi.o
 endif
 
-obj-$(CONFIG_MACH_KINGDOM) += htc_bdaddress.o
+obj-$(CONFIG_MACH_KINGDOM) += htc_bdaddress.o board-kingdom-rfkill.o
 
 CFLAGS_msm_vibrator.o += -Idrivers/staging/android
 

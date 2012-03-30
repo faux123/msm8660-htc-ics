@@ -86,6 +86,9 @@ EXPORT_SYMBOL(cacheid);
 unsigned int __atags_pointer __initdata;
 
 unsigned int system_rev;
+#ifdef CONFIG_MACH_HOLIDAY
+unsigned int system_rev2;
+#endif
 EXPORT_SYMBOL(system_rev);
 
 unsigned int system_serial_low;
@@ -657,6 +660,12 @@ __tagtable(ATAG_SERIAL, parse_tag_serialnr);
 static int __init parse_tag_revision(const struct tag *tag)
 {
 	system_rev = tag->u.revision.rev;
+#ifdef CONFIG_MACH_HOLIDAY
+	system_rev = tag->u.revision.rev2;
+	system_rev2 = tag->u.revision.rev2;
+	if((tag->hdr.size > 3) && (tag->u.revision.rev >= 0x80))  /* get MFG revision for driver use. */
+		system_rev = tag->u.revision.rev;
+#endif
 	return 0;
 }
 
@@ -1047,7 +1056,9 @@ static int c_show(struct seq_file *m, void *v)
 	seq_puts(m, "\n");
 
 	seq_printf(m, "Hardware\t: %s\n", machine_name);
-	seq_printf(m, "Revision\t: %04x\n", system_rev);
+#ifdef CONFIG_MACH_HOLIDAY
+	seq_printf(m, "Revision\t: %04x\n", system_rev2);
+#endif
 	seq_printf(m, "Serial\t\t: %08x%08x\n",
 		   system_serial_high, system_serial_low);
 

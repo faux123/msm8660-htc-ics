@@ -459,6 +459,20 @@ config MACH_BLISS
        help
          Support for the Qualcomm Bliss board.
 
+config MACH_SPADE
+       depends on ARCH_MSM7X30
+       default n
+       bool "Spade"
+       help
+         Support for the Qualcomm Spade board.
+
+config MACH_MECHA
+       depends on ARCH_MSM7X30
+       default n
+       bool "Mecha"
+       help
+         Support for the Qualcomm Mecha board.
+
 config MACH_KINGDOM
        depends on ARCH_MSM7X30
        default n
@@ -809,6 +823,19 @@ config MACH_KNIGHT
 	bool "Knight"
 	help
 	  Support for the HTC Knight
+
+config MACH_RUNNYMEDE
+	depends on ARCH_MSM7X30
+	bool "Runnymede"
+	select ARCH_SPARSEMEM_ENABLE
+	select MEMORY_HOTPLUG
+	select MEMORY_HOTREMOVE
+	select ARCH_ENABLE_MEMORY_HOTPLUG
+	select ARCH_ENABLE_MEMORY_HOTREMOVE
+	select ARCH_MEMORY_PROBE
+	select ARCH_MEMORY_REMOVE
+	help
+	  Support for the HTC Runnymede
 endmenu
 
 config MSM_MDP40
@@ -2155,6 +2182,13 @@ config MSM_RPC_VIBRATOR
 	  Enable the vibrator support on MSM over RPC. The vibrator
 	  is connected on the PMIC. Say Y if you want to enable this
 	  feature.
+config RPC_VER_60001
+	bool "rpc ver 60001"
+	depends on MSM_ONCRPCROUTER
+        help
+          Enable the vibrator support on MSM over RPC. The vibrator
+          is connected on the PMIC. Say Y if you want to enable this
+          feature.
 
 config PM8XXX_RPC_VIBRATOR
 	bool "RPC based Vibrator on PM8xxx PMICs"

@@ -416,6 +416,45 @@ static void hs_pmic_register(void)
 	}
 }
 
+#ifdef CONFIG_MACH_HOLIDAY
+static ssize_t pmic_adc_debug_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	int ret = 0;
+	int adc = 0;
+
+	ret = hs_pmic_remote_adc(&adc);
+	HS_DBG("button ADC = %d",adc);
+	return ret;
+}
+
+
+static struct device_attribute dev_attr_pmic_headset_adc =\
+	__ATTR(pmic_adc_debug, 0644, pmic_adc_debug_show, NULL);
+
+int register_attributes(void)
+{
+	int ret = 0;
+	hi->pmic_dev = device_create(hi->htc_accessory_class,
+				NULL, 0, "%s", "pmic");
+	if (unlikely(IS_ERR(hi->pmic_dev))) {
+		ret = PTR_ERR(hi->pmic_dev);
+		hi->pmic_dev = NULL;
+	}
+
+	/*register the attributes */
+	ret = device_create_file(hi->pmic_dev, &dev_attr_pmic_headset_adc);
+	if (ret)
+		goto err_create_pmic_device_file;
+	return 0;
+
+err_create_pmic_device_file:
+	device_unregister(hi->pmic_dev);
+	HS_ERR("Failed to register pmic attribute file");
+	return ret;
+}
+#endif
+
 static int htc_headset_pmic_probe(struct platform_device *pdev)
 {
 	int ret = 0;
@@ -441,6 +480,10 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 	hi->pdata.hs_controller = pdata->hs_controller;
 	hi->pdata.hs_switch = pdata->hs_switch;
 	hi->pdata.adc_mic = pdata->adc_mic;
+#ifdef CONFIG_MACH_HOLIDAY
+	hi->htc_accessory_class = hs_get_attribute_class();
+	register_attributes();a
+#endif
 
 	if (!hi->pdata.adc_mic)
 		hi->pdata.adc_mic = HS_DEF_MIC_ADC_16_BIT_MIN;

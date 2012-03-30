@@ -95,6 +95,9 @@ struct tag_serialnr {
 
 struct tag_revision {
 	__u32 rev;
+#ifdef CONFIG_MACH_HOLIDAY
+	__u32 rev2;
+#endif
 };
 
 /* initial values for vesafb-type framebuffers. see struct screen_info
