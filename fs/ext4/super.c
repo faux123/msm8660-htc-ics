@@ -43,7 +43,9 @@
 
 #include <linux/kthread.h>
 #include <linux/freezer.h>
+#ifdef CONFIG_EXT4_E2FSCK_RECOVER
 #include <linux/reboot.h>
+#endif
 
 #include "ext4.h"
 #include "ext4_jbd2.h"
@@ -421,8 +423,10 @@ static void ext4_handle_error(struct super_block *sb)
 		panic("EXT4-fs (device %s): panic forced after error\n",
 			sb->s_id);
 
+#ifdef CONFIG_EXT4_E2FSCK_RECOVER
 	if (test_opt(sb, ERRORS_RO))
 		ext4_e2fsck(sb);
+#endif
 }
 
 void __ext4_error(struct super_block *sb, const char *function,
@@ -441,6 +445,7 @@ void __ext4_error(struct super_block *sb, const char *function,
 	ext4_handle_error(sb);
 }
 
+#ifdef CONFIG_EXT4_E2FSCK_RECOVER
 static void ext4_reboot(struct work_struct *work)
 {
 	printk(KERN_ERR "%s: reboot to run e2fsck\n", __func__);
@@ -474,6 +479,7 @@ void ext4_e2fsck(struct super_block *sb)
 	/* queue the work to reboot */
 	queue_work(wq, &sb_info->reboot_work);
 }
+#endif
 
 void ext4_error_inode(struct inode *inode, const char *function,
 		      unsigned int line, ext4_fsblk_t block,
