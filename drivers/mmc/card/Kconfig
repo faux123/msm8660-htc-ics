@@ -76,3 +76,10 @@ config MMC_TEST
 
 	  This driver is only of interest to those developing or
 	  testing a host driver. Most people should say N here.
+
+config MMC_TI_SDIO_ADAPT
+	bool "Use TI SDIO driver to do EMAPI function"
+	help
+	  TI-1271 driver has its own SDIO driver. we use its SDIO drive
+	  to do EMAPI function.
+

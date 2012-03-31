@@ -426,6 +426,7 @@ extern void mmc_wimax_enable_host_wakeup(int on);
 extern int mmc_wimax_get_irq_log(void);
 #endif
 
+#ifdef CONFIG_TIWLAN_POWER_CONTROL_FUNC
 #ifdef CONFIG_MACH_PRIMODD
 //HTC_WIFI_START
 int primodd_wifi_power(int on); 
@@ -436,5 +437,6 @@ extern int ruby_wifi_power(int on);
 #endif
 #if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS
 extern int ti_wifi_power(int on);
+#endif
 #endif
 #endif

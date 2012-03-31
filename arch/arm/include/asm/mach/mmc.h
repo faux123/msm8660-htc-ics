@@ -153,6 +153,7 @@ struct mmc_platform_data {
 	bool disable_bam;
 	bool disable_runtime_pm;
 	bool disable_cmd23;
+	int emmc_dma_ch;
 	u32 swfi_latency;
 };
 

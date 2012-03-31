@@ -1661,8 +1661,10 @@ EXPORT_SYMBOL(mmc_can_trim);
 
 int mmc_can_secure_erase_trim(struct mmc_card *card)
 {
+#ifndef CONFIG_MACH_HOLIDAY
 	if (card->ext_csd.sec_feature_support & EXT_CSD_SEC_ER_EN)
 		return 1;
+#endif
 	return 0;
 }
 EXPORT_SYMBOL(mmc_can_secure_erase_trim);

@@ -136,6 +136,36 @@ EXPORT_SYMBOL(wlan_perf_lock);
 #endif
 /* HTC_CSP_END */
 
+
+//HTC_CSP_START
+#ifdef CONFIG_MMC_TI_SDIO_ADAPT
+struct platform_device *mmci_get_platform_device(void);
+struct mmc_host *mmci_get_mmc(void);
+
+typedef struct wlan_sdioDrv{
+	struct platform_device *pdev;
+	struct mmc_host *mmc;
+} wlan_sdioDrv_t;
+
+wlan_sdioDrv_t g_wlan_sdioDrv;
+
+struct platform_device *mmci_get_platform_device(void)
+{
+	printk("%s\n", __func__);
+	return g_wlan_sdioDrv.pdev;
+}
+EXPORT_SYMBOL(mmci_get_platform_device);
+
+struct mmc_host *mmci_get_mmc(void)
+{
+	printk("%s\n", __func__);
+	return g_wlan_sdioDrv.mmc;
+}
+EXPORT_SYMBOL(mmci_get_mmc);
+#endif
+//HTC_CSP_END
+
+
 #if IRQ_DEBUG == 1
 static char *irq_status_bits[] = { "cmdcrcfail", "datcrcfail", "cmdtimeout",
 				   "dattimeout", "txunderrun", "rxoverrun",
@@ -696,11 +726,7 @@ msmsdcc_dma_complete_tlet(unsigned long data)
 			goto out;
 		}
 		msmsdcc_stop_data(host);
-
-		if (mrq->data->stop && ((mrq->sbc && mrq->data->error)
-				|| !mrq->sbc)) {
-			msmsdcc_start_command(host, mrq->data->stop, 0);
-		} else if (!mrq->data->stop || mrq->cmd->error ||
+		if (!mrq->data->stop || mrq->cmd->error ||
 			(mrq->sbc && !mrq->data->error)) {
 			host->curr.mrq = NULL;
 			host->curr.cmd = NULL;
@@ -710,6 +736,9 @@ msmsdcc_dma_complete_tlet(unsigned long data)
 
 			mmc_request_done(host->mmc, mrq);
 			return;
+		} else if (mrq->data->stop && ((mrq->sbc && mrq->data->error)
+				|| !mrq->sbc)) {
+			msmsdcc_start_command(host, mrq->data->stop, 0);
 		}
 	}
 
@@ -854,10 +883,7 @@ static void msmsdcc_sps_complete_tlet(unsigned long data)
 			return;
 		}
 		msmsdcc_stop_data(host);
-		if (mrq->data->stop && ((mrq->sbc && mrq->data->error)
-				|| !mrq->sbc)) {
-			msmsdcc_start_command(host, mrq->data->stop, 0);
-		} else if (!mrq->data->stop || mrq->cmd->error ||
+		if (!mrq->data->stop || mrq->cmd->error ||
 			(mrq->sbc && !mrq->data->error)) {
 			host->curr.mrq = NULL;
 			host->curr.cmd = NULL;
@@ -867,6 +893,9 @@ static void msmsdcc_sps_complete_tlet(unsigned long data)
 
 			mmc_request_done(host->mmc, mrq);
 			return;
+		} else if (mrq->data->stop && ((mrq->sbc && mrq->data->error)
+				|| !mrq->sbc)) {
+			msmsdcc_start_command(host, mrq->data->stop, 0);
 		}
 	}
 	spin_unlock_irqrestore(&host->lock, flags);
@@ -1163,7 +1192,7 @@ static void
 msmsdcc_start_command_deferred(struct msmsdcc_host *host,
 				struct mmc_command *cmd, u32 *c)
 {
-	DBG(host, "op %d arg %08x flags %08x\n",
+	DBG(host, "op %02x arg %08x flags %08x\n",
 	    cmd->opcode, cmd->arg, cmd->flags);
 
 	*c |= (cmd->opcode | MCI_CPSM_ENABLE);
@@ -1632,18 +1661,11 @@ static int msmsdcc_do_cmdirq(struct msmsdcc_host *host, uint32_t status)
 					cmd->opcode, cmd->error);
 				err = cmd->error;
 			}
-			if (cmd->data && cmd->data->stop)
-				msmsdcc_start_command(host,
-						cmd->data->stop, 0);
-			else
-				msmsdcc_request_end(host, cmd->mrq);
+			msmsdcc_request_end(host, cmd->mrq);
 			if (err)
 				return err;
 		} else { /* host->data == NULL */
-			if (cmd->data && cmd->data->stop) {
-				msmsdcc_start_command(host,
-						cmd->data->stop, 0);
-			} else if (!cmd->error && host->prog_enable) {
+			if (!cmd->error && host->prog_enable) {
 				if (status & MCI_PROGDONE) {
 					host->prog_enable = 0;
 					msmsdcc_request_end(host, cmd->mrq);
@@ -1709,10 +1731,7 @@ msmsdcc_irq(int irq, void *dev_id)
 		if (!host->clks_on) {
 			pr_debug("%s: %s: SDIO async irq received\n",
 					mmc_hostname(host->mmc), __func__);
-			host->mmc->ios.clock = host->clk_rate;
-			spin_unlock(&host->lock);
-			host->mmc->ops->set_ios(host->mmc, &host->mmc->ios);
-			spin_lock(&host->lock);
+			msmsdcc_switch_clock(host->mmc, 1);
 			if (host->plat->cfg_mpm_sdiowakeup &&
 				(host->mmc->pm_flags & MMC_PM_WAKE_SDIO_IRQ))
 				wake_lock(&host->sdio_wlock);
@@ -2602,6 +2621,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 
 	switch (ios->power_mode) {
 	case MMC_POWER_OFF:
+#ifdef CONFIG_TIWLAN_POWER_CONTROL_FUNC
 #ifdef CONFIG_MACH_PRIMODD
 		//HTC_WIFI_START
 		if(2==mmc->index)
@@ -2622,6 +2642,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 			pr_info("ti_wifi_power:0, mmc->index=%d\n", mmc->index);
 			ti_wifi_power(0);
 		}
+#endif
 #endif
 		htc_pwrsink_set(PWRSINK_SDCARD, 0);
 		if (!host->sdcc_irq_disabled) {
@@ -2648,6 +2669,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 		msmsdcc_setup_pins(host, false);
 		break;
 	case MMC_POWER_UP:
+#ifdef CONFIG_TIWLAN_POWER_CONTROL_FUNC
 #ifdef CONFIG_MACH_PRIMODD
 		//HTC_WIFI_START
 		if(2==mmc->index)
@@ -2668,6 +2690,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 			pr_info("ti_wifi_power:1, mmc->index=%d\n", mmc->index);
 			ti_wifi_power(1);
 		}
+#endif
 #endif
 		/* writing PWR_UP bit is redundant */
 		pwr |= MCI_PWR_UP;
@@ -3538,7 +3561,10 @@ msmsdcc_init_dma(struct msmsdcc_host *host)
 	host->dma.cmd_busaddr = host->dma.nc_busaddr;
 	host->dma.cmdptr_busaddr = host->dma.nc_busaddr +
 				offsetof(struct msmsdcc_nc_dmadata, cmdptr);
-	host->dma.channel = host->dmares->start;
+	if (host->plat->emmc_dma_ch)
+		host->dma.channel = host->plat->emmc_dma_ch;
+	else
+		host->dma.channel = host->dmares->start;
 	host->dma.crci = host->dma_crci_res->start;
 
 	return 0;
@@ -4278,14 +4304,6 @@ msmsdcc_probe(struct platform_device *pdev)
 		host->dma.channel = -1;
 		host->dma.crci = -1;
 	}
-	if (is_sd_platform(host->plat) && host->plat->translate_vdd && !host->sdio_gpio_lpm) {
-		if (!host->plat->status(mmc_dev(host->mmc))) {
-			host->plat->translate_vdd(mmc_dev(mmc), 1);
-			mdelay(10);
-			host->plat->translate_vdd(mmc_dev(mmc), 0);
-			mdelay(100);
-		}
-	}
 
 	/*
 	 * Setup SDCC clock if derived from Dayatona
@@ -4400,7 +4418,11 @@ msmsdcc_probe(struct platform_device *pdev)
 
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
 	mmc->caps |= MMC_CAP_WAIT_WHILE_BUSY;
+
+	if (is_sd_platform(host->plat) || is_mmc_platform(host->plat))
+		mmc->caps |= MMC_CAP_ERASE;
 	/* HTC_CSP_START */
+#ifdef CONFIG_TIWLAN_POWER_CONTROL_FUNC
 #ifdef CONFIG_MACH_RUBY
 	if(mmc->index == 3){
 		mmc->caps |= MMC_PM_KEEP_POWER;
@@ -4415,6 +4437,7 @@ msmsdcc_probe(struct platform_device *pdev)
 		mmc->caps |= MMC_CAP_POWER_OFF_CARD;
 	}
 #endif
+
 	/* HTC_CSP_END */
 #ifdef CONFIG_MACH_PRIMODD	
 	 /* HTC_WIFI_START */
@@ -4427,6 +4450,7 @@ msmsdcc_probe(struct platform_device *pdev)
 	}
 	//mmc->caps |= MMC_PM_KEEP_POWER;
 	/* HTC_WIFI_END */
+#endif
 #endif
 	/*
 	 * If we send the CMD23 before multi block write/read command
@@ -4558,6 +4582,13 @@ msmsdcc_probe(struct platform_device *pdev)
 		pr_err("%s: No card detect facilities available\n",
 		       mmc_hostname(mmc));
 
+#ifdef CONFIG_MMC_TI_SDIO_ADAPT
+	if (is_wifi_slot(host->plat)) {
+		pr_info("%s: Wi-Fi OS Router init\n", __func__);
+		g_wlan_sdioDrv.pdev = pdev;
+		g_wlan_sdioDrv.mmc = host->mmc;
+	}
+#endif
 	mmc_set_drvdata(pdev, mmc);
 
 	ret = pm_runtime_set_active(&(pdev)->dev);
