@@ -4723,8 +4723,10 @@ int msm_camera_drv_start(struct platform_device *dev,
 #ifdef CONFIG_CAMERA_3D
 #ifdef CONFIG_MACH_SHOOTER_U
 	if (system_rev == 0x80 && get_engineerid() == 0x1) {
-#elif defined(CONFIG_MACH_SHOOTER)
+#elif defined(CONFIG_MACH_SHOOTER) || defined(CONFIG_MACH_SHOOTER_K)
 	if (get_engineerid() & 0x4) {
+#elif defined(CONFIG_MACH_SHOOTER_CT)
+	if (get_engineerid() == 0x0) {
 #endif
 		return 	msm_camera_drv_start_liteon(dev, sensor_probe);
 	}
