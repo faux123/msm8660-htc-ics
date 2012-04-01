@@ -955,8 +955,11 @@ static void mdp_drv_init(void)
 	}
 #endif
 }
-
+#ifdef CONFIG_MACH_PYRAMID
 int mdp_get_gamma_curvy(struct gamma_curvy *gamma_tbl, struct gamma_curvy *gc, struct mdp_reg *color_enhancement_tbl)
+#else
+int mdp_get_gamma_curvy(struct gamma_curvy *gamma_tbl, struct gamma_curvy *gc)
+#endif
 {
 	uint32_t *ref_y_gamma;
 	uint32_t *ref_y_shade;
@@ -1003,15 +1006,24 @@ int mdp_get_gamma_curvy(struct gamma_curvy *gamma_tbl, struct gamma_curvy *gc, s
 	/* check if lut component is enabled */
 	val = inpdw(MDP_BASE + 0x90070);
 	val = val & (0x7);
-	//if (0x7 == val) {
+#ifndef CONFIG_MACH_PYRAMID
+	if (0x7 == val) {
+#else
 	if (color_enhancement_tbl) {
+#endif
 		for (i = 0; i < cmap.len; i++) {
 			addr = 0x94800 + (0x400 * mdp_lut_i) + cmap.start * 4 + i * 4;
 
 			val = inpdw(MDP_BASE + addr);
+#ifdef CONFIG_MACH_PYRAMID
 			*r++ = (color_enhancement_tbl[i].val & 0xff0000) >> 16;
 			*b++ = (color_enhancement_tbl[i].val & 0xff00) >> 8;
 			*g++ = color_enhancement_tbl[i].val & 0xff;
+#else
+			*r++ = (val & 0xff0000) >> 16;
+			*b++ = (val & 0xff00) >> 8;
+			*g++ = val & 0xff;
+#endif
 		}
 	} else {
 		for (i = 0; i < cmap.len; i++) {

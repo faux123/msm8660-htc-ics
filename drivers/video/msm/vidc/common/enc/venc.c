@@ -35,15 +35,6 @@
 
 #define VID_ENC_NAME	"msm_vidc_enc"
 
-#if DEBUG
-#define DBG(x...) printk(KERN_DEBUG "[VID] " x)
-#else
-#define DBG(x...)
-#endif
-
-#define INFO(x...) printk(KERN_INFO "[VID] " x)
-#define ERR(x...) printk(KERN_ERR "[VID] " x)
-
 static struct vid_enc_dev *vid_enc_device_p;
 static dev_t vid_enc_dev_num;
 static struct class *vid_enc_class;
@@ -545,6 +536,7 @@ static int vid_enc_open(struct inode *inode, struct file *file)
 
 	init_completion(&client_ctx->event);
 	mutex_init(&client_ctx->msg_queue_lock);
+	mutex_init(&client_ctx->enrty_queue_lock);
 	INIT_LIST_HEAD(&client_ctx->msg_queue);
 	init_waitqueue_head(&client_ctx->msg_wait);
 	if (vcd_get_ion_status()) {

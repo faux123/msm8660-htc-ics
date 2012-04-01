@@ -591,6 +591,7 @@ static int mipi_dsi_off(struct platform_device *pdev)
 	uint32_t wait_time = 0;
 	struct msm_fb_data_type *mfd;
 	struct msm_panel_info *pinfo;
+	struct msm_fb_data_type* rtn_mfd;
 
 	mfd = platform_get_drvdata(pdev);
 	pinfo = &mfd->panel_info;
@@ -622,8 +623,8 @@ static int mipi_dsi_off(struct platform_device *pdev)
 
 	ret = panel_next_off(pdev);
 
-	dsi_mutex_lock();
-	dsi_busy_check();
+	rtn_mfd = dsi_mutex_lock();
+	dsi_busy_check(rtn_mfd);
 
 	/* disbale dsi engine */
 	MIPI_OUTP(MIPI_DSI_BASE + 0x0000, 0);
@@ -684,7 +685,8 @@ static int mipi_dsi_off(struct platform_device *pdev)
 	clk_disable(dsi_m_pclk);
 	clk_disable(dsi_s_pclk);
 	clk_disable(amp_pclk); /* clock for AHB-master to AXI */
-	dsi_mutex_unlock();
+
+	dsi_mutex_unlock(rtn_mfd);
 
 	if (atomic_read(&need_soft_reset) == 1) {
 		/* DSI soft reset */

@@ -25,6 +25,11 @@
 #define	MHL_DEV_LD_GUI						(0x01 << 7)
 #define	MHL_LOGICAL_DEVICE_MAP			(MHL_DEV_LD_AUDIO | MHL_DEV_LD_VIDEO | MHL_DEV_LD_MEDIA | MHL_DEV_LD_GUI)
 
+#define	MHL_VER_MAJOR						(0x01 << 4)
+#define	MHL_VER_MINOR						0x01
+#define	MHL_VERSION							(MHL_VER_MAJOR | MHL_VER_MINOR)
+
+
 #define MHL_STATUS_REG_CONNECTED_RDY        0x30
 #define MHL_STATUS_REG_LINK_MODE            0x31
 

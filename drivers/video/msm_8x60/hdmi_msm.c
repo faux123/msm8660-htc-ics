@@ -27,8 +27,9 @@
 #include <linux/mutex.h>
 #include <linux/switch.h>
 #include <mach/clk.h>
-
 #include "msm_fb.h"
+#include "mdp4.h"
+
 #include "external_common.h"
 #ifdef CONFIG_HTC_HEADSET_MGR
 #include <mach/htc_headset_mgr.h>
@@ -106,7 +107,6 @@ struct hdmi_msm_state_type {
 
 	struct external_common_state_type common;
 };
-
 
 /* ------------------------------------------------------------------------------*/
 /*                          Global variable declaration											*/
@@ -2929,6 +2929,7 @@ static void hdmi_msm_en_gc_packet(boolean av_mute_is_requested)
 	/* HDMI_VBI_PKT_CTRL[0x0028] */
 	hdmi_msm_rmw32or(0x0028, 3 << 4);
 }
+#ifdef CONFIG_FB_MSM_HDMI_MSM_PANEL_ISRC_ACP_SUPPORT
 
 static void hdmi_msm_en_isrc_packet(boolean isrc_is_continued)
 {
@@ -2971,6 +2972,7 @@ static void hdmi_msm_en_acp_packet(uint32 byte1)
 	/* ACP send, s/w source */
 	hdmi_msm_rmw32or(0x0028, 3 << 12);
 }
+#endif
 
 static void hdmi_msm_audio_setup(void)
 {
@@ -2978,10 +2980,12 @@ static void hdmi_msm_audio_setup(void)
 
 	/* (0) for clr_avmute, (1) for set_avmute */
 	hdmi_msm_en_gc_packet(0);
+#ifdef CONFIG_FB_MSM_HDMI_MSM_PANEL_ISRC_ACP_SUPPORT
 	/* (0) for isrc1 only, (1) for isrc1 and isrc2 */
 	hdmi_msm_en_isrc_packet(1);
 	/* arbitrary bit pattern for byte1 */
 	hdmi_msm_en_acp_packet(0x5a);
+#endif
 
 	hdmi_msm_audio_acr_setup(TRUE,
 		external_common_state->video_resolution,
@@ -3025,7 +3029,6 @@ static int hdmi_msm_audio_off(void)
 	return 0;
 }
 
-
 static uint8 hdmi_msm_avi_iframe_lut[][14] = {
 /*	480p60	480i60	576p50	576i50	720p60	720p50	1080p60	1080i60	1080p50
 	1080i50	1080p24	1080p30	1080p25	640x480p */
@@ -3033,9 +3036,9 @@ static uint8 hdmi_msm_avi_iframe_lut[][14] = {
 	 0x10,	0x10,	0x10,	0x10,	0x10},
 	{0x18,	0x18,	0x28,	0x28,	0x28,	0x28,	0x28,	0x28,	0x28,
 	 0x28,	0x28,	0x28,	0x28,	0x18},
-	{0x04,	0x04,	0x04,	0x04,	0x04,	0x04,	0x04,	0x04,	0x04,
-	 0x04,	0x04,	0x04,	0x04,	0x88},
-	{0x02,	0x06,	0x12,	0x15,	0x04,	0x13,	0x10,	0x05,	0x1F,
+	{0x04,	0x00,	0x04,	0x00,	0x00,	0x00,	0x00,	0x00,	0x00,
+	 0x00,	0x00,	0x00,	0x00,	0x04},
+	{0x02,	0x06,	0x12,	0x15,	0x00,	0x13,	0x10,	0x05,	0x1F,
 	 0x14,	0x20,	0x22,	0x21,	0x01},
 	{0x00,	0x01,	0x00,	0x01,	0x00,	0x00,	0x00,	0x00,	0x00,
 	 0x00,	0x00,	0x00,	0x00,	0x00},
@@ -3115,7 +3118,6 @@ static void hdmi_msm_avi_info_frame(void)
 			external_common_state->video_resolution);
 		return;
 	}
-
 	/* InfoFrame Type = 82 */
 	aviInfoFrame[0]  = 0x82;
 	/* Version = 2 */
@@ -3128,7 +3130,12 @@ static void hdmi_msm_avi_info_frame(void)
 	/* Data Byte 02: C1 C0 M1 M0 R3 R2 R1 R0 */
 	aviInfoFrame[4]  = hdmi_msm_avi_iframe_lut[1][mode];
 	/* Data Byte 03: ITC EC2 EC1 EC0 Q1 Q0 SC1 SC0 */
-	aviInfoFrame[5]  = hdmi_msm_avi_iframe_lut[2][mode];
+	/*Test3.2.2.3 AVIPackets should be 0x00 => no VCDB support*/
+	/*Test3.2.3.2 480p/576p need to ouput limited range format*/
+	if(external_common_state->vcdb_support)
+		aviInfoFrame[5]  = hdmi_msm_avi_iframe_lut[2][mode];
+	else
+		aviInfoFrame[5] = 0x00;
 	/* Data Byte 04: 0 VIC6 VIC5 VIC4 VIC3 VIC2 VIC1 VIC0 */
 	aviInfoFrame[6]  = hdmi_msm_avi_iframe_lut[3][mode];
 	/* Data Byte 05: 0 0 0 0 PR3 PR2 PR1 PR0 */
@@ -3563,7 +3570,6 @@ static int hdmi_msm_power_on(struct platform_device *pdev)
 /*#else*/ /* CONFIG_FB_MSM_HDMI_MSM_PANEL_DVI_SUPPORT */
 /*	DEV_DBG("power=%s\n", hdmi_msm_is_power_on() ? "ON" : "OFF");*/
 /*#endif*/ /* CONFIG_FB_MSM_HDMI_MSM_PANEL_DVI_SUPPORT */
-
 	return 0;
 }
 

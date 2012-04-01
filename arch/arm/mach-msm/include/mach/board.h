@@ -519,9 +519,7 @@ struct msm_vidc_platform_data {
 	int memtype;
 	u32 enable_ion;
 	int disable_dmx;
-#ifdef CONFIG_MACH_HOLIDAY
 	int disable_fullhd;
-#endif
 #ifdef CONFIG_MSM_BUS_SCALING
 	struct msm_bus_scale_pdata *vidc_bus_client_pdata;
 #endif

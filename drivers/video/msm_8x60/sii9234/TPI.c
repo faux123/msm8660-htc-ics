@@ -499,7 +499,7 @@ static void InitCBusRegs(void)
 
 
 	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x80, 0x00);
-	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x81, (0x01 << 4));
+	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x81, MHL_VERSION);
 	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x82, 0x02);
 	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x83, 0x01);
 	I2C_WriteByte(CBUS_SLAVE_ADDR, 0x84, 0x6F);

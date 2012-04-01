@@ -1007,9 +1007,10 @@ int mipi_dsi_cmds_tx(struct dsi_buf *tp, struct dsi_cmd_desc *cmds, int cnt)
 	struct dsi_cmd_desc *cm;
 	uint32 dsi_ctrl, ctrl;
 	int i, video_mode;
+	struct msm_fb_data_type* rtn_mfd;
 
-	dsi_mutex_lock();
-	dsi_busy_check();
+	rtn_mfd = dsi_mutex_lock();
+	dsi_busy_check(rtn_mfd);
 
 	/* turn on cmd mode
 	 * for video mode, do not send cmds more than
@@ -1039,7 +1040,7 @@ int mipi_dsi_cmds_tx(struct dsi_buf *tp, struct dsi_cmd_desc *cmds, int cnt)
 	if (video_mode)
 		MIPI_OUTP(MIPI_DSI_BASE + 0x0000, dsi_ctrl); /* restore */
 
-	dsi_mutex_unlock();
+	dsi_mutex_unlock(rtn_mfd);
 
 	return cnt;
 }
@@ -1055,6 +1056,7 @@ int mipi_dsi_cmds_rx(struct dsi_buf *tp, struct dsi_buf *rp,
 				struct dsi_cmd_desc *cmds, int len)
 {
 	int cnt, res;
+	struct msm_fb_data_type* rtn_mfd;
 
 	if (len <= 2)
 		cnt = 4;	/* short read */
@@ -1073,8 +1075,8 @@ int mipi_dsi_cmds_rx(struct dsi_buf *tp, struct dsi_buf *rp,
 	mipi_dsi_buf_init(tp);
 	mipi_dsi_cmd_dma_add(tp, cmds);
 
-	dsi_mutex_lock();
-	dsi_busy_check();
+	rtn_mfd = dsi_mutex_lock();
+	dsi_busy_check(rtn_mfd);
 
 	mipi_dsi_enable_irq();
 	/* transmit read comamnd to client */
@@ -1088,7 +1090,7 @@ int mipi_dsi_cmds_rx(struct dsi_buf *tp, struct dsi_buf *rp,
 	mipi_dsi_cmd_dma_rx(rp, cnt);
 
 	mipi_dsi_disable_irq();
-	dsi_mutex_unlock();
+	dsi_mutex_unlock(rtn_mfd);
 
 	/* strip off dcs read header & crc */
 	rp->data += (4 + res);

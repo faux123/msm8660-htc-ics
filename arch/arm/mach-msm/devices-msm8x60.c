@@ -2493,13 +2493,8 @@ struct msm_vidc_platform_data vidc_platform_data = {
 #else
 	.enable_ion = 0,
 #endif
-#ifdef CONFIG_MACH_PYRAMID
-	.disable_dmx = 0
-#endif
-#ifdef CONFIG_MACH_HOLIDAY
 	.disable_dmx = 0,
 	.disable_fullhd = 0
-#endif
 };
 
 struct platform_device msm_device_vidc = {

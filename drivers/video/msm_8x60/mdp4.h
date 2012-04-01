@@ -578,5 +578,5 @@ void mdp4_overlay_dsi_video_vsync_push(struct msm_fb_data_type *mfd,
 				struct mdp4_overlay_pipe *pipe);
 void mdp4_primary_vsync_dsi_video(void);
 void mdp4_dmap_done_dsi_video(void);
-
+void mdp4_set_limit_range(bool set_limit_range);
 #endif /* MDP_H */

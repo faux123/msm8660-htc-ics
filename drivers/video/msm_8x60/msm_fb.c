@@ -1129,8 +1129,11 @@ static int msm_fb_get_lut(struct fb_info *info, void __user *p)
 	if (copy_from_user(&gc, p, sizeof(struct gamma_curvy))){
 		return -EFAULT;
 	}
-
+#ifdef CONFIG_MACH_PYRAMID
 	ret = mfd->get_gamma_curvy(mfd->mdp_pdata->abl_gamma_tbl, &gc, mfd->mdp_pdata->color_enhancment_tbl);
+#else
+	ret = mfd->get_gamma_curvy(mfd->mdp_pdata->abl_gamma_tbl, &gc);
+#endif
 
 	if (ret)
 		return ret;

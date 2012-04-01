@@ -207,6 +207,7 @@ struct external_common_state_type {
 	struct kobject *uevent_kobj;
 	uint32 video_resolution;
 	struct device *dev;
+	bool vcdb_support;
 #ifdef CONFIG_FB_MSM_HDMI_3D
 	boolean format_3d;
 	void (*switch_3d)(boolean on);

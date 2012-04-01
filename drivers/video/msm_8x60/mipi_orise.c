@@ -807,13 +807,15 @@ unsigned char mipi_orise_read_power(void)
 
 	/* periodically check if S/W reset of DSI is necessary */
 	if (1 == mipi_dsi_reset_read()) {
+		struct msm_fb_data_type* rtn_mfd;
+
 		mipi_dsi_reset_set(0);
-		dsi_mutex_lock();
-		dsi_busy_check();
+		rtn_mfd = dsi_mutex_lock();
+		dsi_busy_check(rtn_mfd);
 
 		/*mipi_dsi_sw_reset();*/
 
-		dsi_mutex_unlock();
+		dsi_mutex_unlock(rtn_mfd);
 	}
 
 	return *(rp->data);
@@ -1047,7 +1049,6 @@ static int mipi_dsi_set_backlight(struct msm_fb_data_type *mfd)
 	mutex_lock(&cmdlock);
 
 	mipi  = &mfd->panel_info.mipi;
-	PR_DISP_DEBUG("%s+:bl=%d status=%d\n", __func__, mfd->bl_level, mipi_status);
 	if (mipi_status == 0)
 		goto end;
 	if (mipi_orise_pdata && mipi_orise_pdata->shrink_pwm)
@@ -1082,7 +1083,6 @@ static void mipi_orise_set_backlight(struct msm_fb_data_type *mfd)
 	int bl_level;
 
 	bl_level = mfd->bl_level;
-	PR_DISP_DEBUG("%s+ bl_level=%d\n", __func__, mfd->bl_level);
 
 	mipi_dsi_set_backlight(mfd);
 

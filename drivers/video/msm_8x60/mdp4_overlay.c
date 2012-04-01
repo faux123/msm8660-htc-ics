@@ -119,6 +119,8 @@ struct mdp4_overlay_ctrl {
 static struct mdp4_overlay_ctrl *ctrl = &mdp4_overlay_db;
 static struct msmfb_overlay_3d virtualfb3d;
 static uint32 perf_level;
+static uint32 cur_perf_level;
+static uint32 mdp_deferred_set_core_clk;
 static uint32 mdp4_del_res_rel;
 
 int mdp4_overlay_mixer_play(int mixer_num)
@@ -1504,12 +1506,13 @@ static int mdp4_overlay_validate_downscale(struct mdp_overlay *req,
 	unsigned long fillratex100, mdp_pixels_produced;
 	unsigned long mdp_clk_hz;
 
+#ifdef OVDEBUG
 	PR_DISP_ERR("%s: Downscale validation with MDP Core"
 		" Clk rate\n", __func__);
 	PR_DISP_DEBUG("src_w %u, src_h %u, dst_w %u, dst_h %u\n",
 		req->src_rect.w, req->src_rect.h, req->dst_rect.w,
 		req->dst_rect.h);
-
+#endif
 
 	panel_clk_khz = pclk_rate/1000;
 	mdp_clk_hz = mdp_perf_level2clk_rate(perf_level);
@@ -1533,9 +1536,11 @@ static int mdp4_overlay_validate_downscale(struct mdp_overlay *req,
 	total_hsync_period_ps = num_hsync_pix_clks * hsync_period_ps;
 	mdp_clks_per_hsync = total_hsync_period_ps/mdp_period_ps;
 
+#ifdef OVDEBUG
 	PR_DISP_DEBUG("hsync_period_ps %u, mdp_period_ps %u,"
 		"total_hsync_period_ps %u\n", hsync_period_ps,
 		mdp_period_ps, total_hsync_period_ps);
+#endif
 
 	src_wh = req->src_rect.w * req->src_rect.h;
 	if (src_wh % req->dst_rect.h)
@@ -1551,14 +1556,18 @@ static int mdp4_overlay_validate_downscale(struct mdp_overlay *req,
 	else
 		fillratex100 = 100 * fill_rate_x_dir / mfd->panel_info.xres;
 
+#ifdef OVDEBUG
 	PR_DISP_DEBUG("mdp_clks_per_hsync %u, fill_rate_y_dir %lu,"
 		"fill_rate_x_dir %lu\n", mdp_clks_per_hsync,
 		fill_rate_y_dir, fill_rate_x_dir);
+#endif
 
 	mdp_pixels_produced = 100 * mdp_clks_per_hsync/fillratex100;
+#ifdef OVDEBUG
 	PR_DISP_ERR("fillratex100 %lu, mdp_pixels_produced %lu\n",
 		fillratex100, mdp_pixels_produced);
-	if (mdp_pixels_produced <= mfd->panel_info.xres) {
+#endif
+	if (mdp_pixels_produced <= num_hsync_pix_clks) {
 		PR_DISP_ERR("%s(): LCDC underflow detected during downscale\n",
 		      __func__);
 		return -ERANGE;
@@ -2009,10 +2018,23 @@ int mdp4_overlay_set(struct fb_info *info, struct mdp_overlay *req)
 		return -EINTR;
 	}
 
+	if (cur_perf_level == 0)
+		cur_perf_level = OVERLAY_PERF_LEVEL4;
+	else
+		cur_perf_level = perf_level;
+
 	perf_level = mdp4_overlay_get_perf_level(req->src.width,
 						req->src.height,
 						req->src.format,
 						req->is_fg);
+	mixer = mfd->panel_info.pdest;	/* DISPLAY_1 or DISPLAY_2 */
+
+	ret = mdp4_overlay_req2pipe(req, mixer, &pipe, mfd);
+	if (ret < 0) {
+		mutex_unlock(&mfd->dma->ov_mutex);
+		PR_DISP_ERR("%s: mdp4_overlay_req2pipe, ret=%d\n", __func__, ret);
+		return ret;
+	}
 
 	if ((mfd->panel_info.type == LCDC_PANEL) &&
 	    (req->src_rect.h > req->dst_rect.h || req->src_rect.w > req->dst_rect.w)) {
@@ -2040,14 +2062,6 @@ int mdp4_overlay_set(struct fb_info *info, struct mdp_overlay *req)
 	}
 #endif
 #endif
-	mixer = mfd->panel_info.pdest;	/* DISPLAY_1 or DISPLAY_2 */
-
-	ret = mdp4_overlay_req2pipe(req, mixer, &pipe, mfd);
-	if (ret < 0) {
-		mutex_unlock(&mfd->dma->ov_mutex);
-		PR_DISP_ERR("%s: mdp4_overlay_req2pipe, ret=%d\n", __func__, ret);
-		return ret;
-	}
 
 #ifdef CONFIG_FB_MSM_MIPI_DSI
 	if (req->user_data[OVERLAY_UPDATE_SOURCE] == OVERLAY_UPDATE_SOURCE_CAMERA && !atomic_read(&ovsource)) {
@@ -2066,7 +2080,8 @@ int mdp4_overlay_set(struct fb_info *info, struct mdp_overlay *req)
 				mdp4_dsi_overlay_blt_start(mfd);
 			/* Run blt mode only when camera is not lanuch or dtv is connected */
 #ifdef	CONFIG_FB_MSM_DTV
-			} else if (mfd->blt_mode && (!atomic_read(&ovsource) || atomic_read(&mdp_dtv_on))) {
+			/* FIXME: Remove source camera check temporarily. It needs support from framework. */
+			} else if (mfd->blt_mode && atomic_read(&mdp_dtv_on)) {
 #else
 			} else if (mfd->blt_mode && !atomic_read(&ovsource)) {
 #endif
@@ -2089,23 +2104,19 @@ int mdp4_overlay_set(struct fb_info *info, struct mdp_overlay *req)
 						req->src.format,
 						req->is_fg);
 	mdp4_del_res_rel = 0;
-	if (req->user_data[OVERLAY_UPDATE_SCREEN] == OVERLAY_UPDATE_SCREEN_EN
-		&& pipe->srcp0_addr) {
-		pipe->req_data.user_data[OVERLAY_UPDATE_SCREEN] = OVERLAY_UPDATE_SCREEN_DIS;
-		if (pipe->pipe_num >= OVERLAY_PIPE_VG1)
-			mdp4_overlay_vg_setup(pipe);	/* video/graphic pipe */
-		else
-			mdp4_overlay_rgb_setup(pipe);	/* rgb pipe */
-
-		mdp4_mixer_blend_setup(pipe);
-		mdp4_mixer_stage_up(pipe);
-	}
 #ifdef CONFIG_FB_MSM_MIPI_DSI
 	if (pipe->mixer_num == MDP4_MIXER0)
 		atomic_inc(&dsi_unset_cnt);
 #endif
 	mutex_unlock(&mfd->dma->ov_mutex);
-	mdp_set_core_clk(perf_level);
+
+	if (mfd->panel_info.type == MIPI_VIDEO_PANEL) {
+		if (cur_perf_level > perf_level)
+			mdp_set_core_clk(perf_level);
+		else
+			mdp_deferred_set_core_clk = 1;
+	} else
+		mdp_set_core_clk(perf_level);
 
 #ifdef CONFIG_MSM_BUS_SCALING
 	if (pipe->mixer_num == MDP4_MIXER0) {
@@ -2121,6 +2132,7 @@ void  mdp4_overlay_resource_release(void)
 {
 	if (mdp4_del_res_rel) {
 		mdp_set_core_clk(OVERLAY_PERF_LEVEL3);
+		cur_perf_level = OVERLAY_PERF_LEVEL3;
 		mdp4_del_res_rel = 0;
 	}
 }
@@ -2407,6 +2419,7 @@ int mdp4_overlay_play(struct fb_info *info, struct msmfb_overlay_data *req,
 	if (pipe->pipe_type == OVERLAY_TYPE_VIDEO && atomic_read(&ov_unset))
 		return 0;
 
+#ifdef CONFIG_MACH_PYRAMID
 	if (mfd->esd_fixup) {
 		mutex_lock(&mfd->dma->ov_mutex);
 		if (mfd && mfd->panel_power_on && pipe)
@@ -2414,9 +2427,11 @@ int mdp4_overlay_play(struct fb_info *info, struct msmfb_overlay_data *req,
 		if (pipe && pipe->blt_addr)
 			mdp4_dsi_blt_dmap_busy_wait(mfd);
 		mutex_unlock(&mfd->dma->ov_mutex);
-		mfd->esd_fixup((uint32_t)mfd);
 	}
-
+#else
+	if (mfd->esd_fixup)
+		mfd->esd_fixup((uint32_t)mfd);
+#endif
 	if (mutex_lock_interruptible(&mfd->dma->ov_mutex))
 		return -EINTR;
 
@@ -2568,6 +2583,11 @@ int mdp4_overlay_play(struct fb_info *info, struct msmfb_overlay_data *req,
 	if (virtualfb3d.is_3d && pipe->pipe_type == OVERLAY_TYPE_VIDEO)
 		atomic_set(&ov_play, 0);
 	mutex_unlock(&mfd->dma->ov_mutex);
+
+	if (mdp_deferred_set_core_clk) {
+		mdp_set_core_clk(perf_level);
+		mdp_deferred_set_core_clk = 0;
+	}
 
 	if (atomic_read(&ov_unset))
 		complete(&ov_comp);

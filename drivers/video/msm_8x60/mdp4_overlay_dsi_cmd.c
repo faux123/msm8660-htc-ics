@@ -40,7 +40,7 @@
 #include <mach/debug_display.h>
 
 static struct mdp4_overlay_pipe *dsi_pipe;
-static struct msm_fb_data_type *dsi_mfd;
+static struct msm_fb_data_type *dsi_mfd = NULL;
 static atomic_t busy_wait_cnt;
 
 static int vsync_start_y_adjust = 4;
@@ -67,25 +67,29 @@ static __u32 msm_fb_line_length(__u32 fb_index, __u32 xres, int bpp)
 		return xres * bpp;
 }
 
-void dsi_busy_check(void)
+void dsi_busy_check(struct msm_fb_data_type* curr_dsi_mfd)
 {
-	if (dsi_mfd && dsi_pipe) {
-		mdp4_dsi_cmd_dma_busy_wait(dsi_mfd, dsi_pipe);
+	if (curr_dsi_mfd && dsi_pipe) {
+		mdp4_dsi_cmd_dma_busy_wait(curr_dsi_mfd, dsi_pipe);
 		if (dsi_pipe->blt_addr)
-			mdp4_dsi_blt_dmap_busy_wait(dsi_mfd);
+			mdp4_dsi_blt_dmap_busy_wait(curr_dsi_mfd);
 	}
 }
 
-void dsi_mutex_lock(void)
+struct msm_fb_data_type* dsi_mutex_lock(void)
 {
-	if (dsi_mfd)
-		mutex_lock(&dsi_mfd->dma->ov_mutex);
+	struct msm_fb_data_type* curr_dsi_mfd = dsi_mfd;
+
+	if (curr_dsi_mfd)
+		mutex_lock(&curr_dsi_mfd->dma->ov_mutex);
+
+	return curr_dsi_mfd;
 }
 
-void dsi_mutex_unlock(void)
+void dsi_mutex_unlock(struct msm_fb_data_type* curr_dsi_mfd)
 {
-	if (dsi_mfd)
-		mutex_unlock(&dsi_mfd->dma->ov_mutex);
+	if (curr_dsi_mfd)
+		mutex_unlock(&curr_dsi_mfd->dma->ov_mutex);
 }
 
 void mdp4_mipi_vsync_enable(struct msm_fb_data_type *mfd,
@@ -825,6 +829,7 @@ void mdp4_dsi_cmd_overlay(struct msm_fb_data_type *mfd)
 			mdp4_overlay_handle_padding(mfd, true);
 	}
 
+#ifdef CONFIG_MACH_PYRAMID
 	if (mfd->esd_fixup) {
 		mutex_lock(&mfd->dma->ov_mutex);
 		if (mfd && mfd->panel_power_on && dsi_pipe)
@@ -832,8 +837,11 @@ void mdp4_dsi_cmd_overlay(struct msm_fb_data_type *mfd)
 		if (dsi_pipe && dsi_pipe->blt_addr)
 			mdp4_dsi_blt_dmap_busy_wait(mfd);
 		mutex_unlock(&mfd->dma->ov_mutex);
-		mfd->esd_fixup((uint32_t)mfd);
 	}
+#else
+	if (mfd->esd_fixup)
+		mfd->esd_fixup((uint32_t)mfd);
+#endif
 
 	mutex_lock(&mfd->dma->ov_mutex);
 

@@ -683,7 +683,17 @@ static uint32 hdmi_edid_extract_ieee_reg_id(const uint8 *in_buf)
 		((uint32)vsd[6] << 8) + (uint32)vsd[5], (uint32)vsd[7] * 5);
 	return ((uint32)vsd[3] << 16) + ((uint32)vsd[2] << 8) + (uint32)vsd[1];
 }
-
+/*Video Capability Data Block*/
+static void hdmi_edid_extract_vcdb(const uint8 *in_buf)
+{
+	uint8 len;
+	const uint8 *vcdb = hdmi_edid_find_block(in_buf, 7, &len);
+	if(vcdb == NULL)
+		external_common_state->vcdb_support = false;
+	else
+		external_common_state->vcdb_support = true;
+	return;
+}
 static void hdmi_edid_extract_3d_present(const uint8 *in_buf)
 {
 	uint8 len, offset;
@@ -1059,6 +1069,7 @@ int hdmi_common_read_edid(void)
 				edid_buf+0x80);
 			hdmi_edid_extract_audio_data_blocks(edid_buf+0x80);
 			hdmi_edid_extract_3d_present(edid_buf+0x80);
+			hdmi_edid_extract_vcdb(edid_buf+0x80);
 		}
 		break;
 	case 2:

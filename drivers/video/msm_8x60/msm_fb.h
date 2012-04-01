@@ -134,7 +134,11 @@ struct msm_fb_data_type {
 			      struct fb_cmap *cmap);
 	int (*do_histogram) (struct fb_info *info,
 			      struct mdp_histogram *hist, struct msm_fb_data_type *mfd);
+#ifdef CONFIG_MACH_PYRAMID
 	int (*get_gamma_curvy) (struct gamma_curvy *gamma_tbl, struct gamma_curvy *gc, struct mdp_reg *color_enhancement_tbl);
+#else
+	int (*get_gamma_curvy) (struct gamma_curvy *gamma_tbl, struct gamma_curvy *gc);
+#endif
 	void *cursor_buf;
 	void *cursor_buf_phys;
 
