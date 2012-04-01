@@ -66,3 +66,8 @@ config WL12XX_PLATFORM_DATA
 	bool "TI wl12xx PLATFORM DATA support"
 	depends on WL12XX_SDIO != n || WL1271_SDIO != n
 	default n
+
+config TIWLAN_POWER_CONTROL_FUNC
+	bool "TI WLAN power control function"
+	depends on WL12XX_PLATFORM_DATA != n
+	default n
