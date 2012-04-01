@@ -435,7 +435,7 @@ int primodd_wifi_power(int on);
 #ifdef CONFIG_MACH_RUBY
 extern int ruby_wifi_power(int on);
 #endif
-#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS
+#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS || definied CONFIG_MACH_HOLIDAY
 extern int ti_wifi_power(int on);
 #endif
 #endif

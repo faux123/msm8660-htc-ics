@@ -2637,7 +2637,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 			ruby_wifi_power(0);
 		}
 #endif
-#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS
+#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS || defined CONFIG_MACH_HOLIDAY
 		if (is_wifi_slot(host->plat)) {
 			pr_info("ti_wifi_power:0, mmc->index=%d\n", mmc->index);
 			ti_wifi_power(0);
@@ -2685,7 +2685,7 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 			ruby_wifi_power(1);
 		}
 #endif
-#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS
+#if defined CONFIG_MACH_BLISS || defined CONFIG_MACH_BLISSC || defined CONFIG_MACH_PRIMODS || defined CONFIG_MACH_HOLIDAY
 		if (is_wifi_slot(host->plat)) {
 			pr_info("ti_wifi_power:1, mmc->index=%d\n", mmc->index);
 			ti_wifi_power(1);
