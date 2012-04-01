@@ -482,7 +482,7 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 	hi->pdata.adc_mic = pdata->adc_mic;
 #ifdef CONFIG_MACH_HOLIDAY
 	hi->htc_accessory_class = hs_get_attribute_class();
-	register_attributes();a
+	register_attributes();
 #endif
 
 	if (!hi->pdata.adc_mic)
