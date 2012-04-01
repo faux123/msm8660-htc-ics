@@ -27,7 +27,7 @@
 #include <linux/workqueue.h>
 
 #if defined(CONFIG_MACH_MECHA)
-#include <mach/smsc251x.h>
+/*#include <mach/smsc251x.h>*/
 #endif
 /*#define HTC_DIAG_DEBUG*/
 #include <linux/debugfs.h>
@@ -237,6 +237,9 @@ struct diag_context {
 	u64 rx_count; /* from smd */
 	u64 usb_in_count; /* to pc */
 	u64 usb_out_count; /* from pc */
+#ifdef CONFIG_MACH_HOLIDAY
+	int ready;
+#endif
 #endif
 };
 
@@ -979,6 +982,9 @@ static int diag_setup(void)
 {
 #if DIAG_XPST
 	struct diag_context *dev = &_context;
+#ifdef CONFIG_MACH_HOLIDAY
+	dev->ready = 1;
+#endif
 
 	spin_lock_init(&dev->req_lock);
 	mutex_init(&dev->user_lock);

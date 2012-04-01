@@ -254,8 +254,8 @@ static void projector_send_touch_event(struct projector_dev *dev,
 	int iPenType, int iX, int iY)
 {
 	struct input_dev *tdev = dev->touch_input;
-    static int b_prePenDown = false;
-    static int b_firstPenDown = true;
+	static int b_prePenDown = false;
+	static int b_firstPenDown = true;
 	static int iCal_LastX;
 	static int iCal_LastY;
 	static int iReportCount;
@@ -570,6 +570,10 @@ projector_function_unbind(struct usb_configuration *c, struct usb_function *f)
 
 	dev->online = 0;
 	dev->error = 1;
+	if (dev->touch_input)
+		input_unregister_device(dev->touch_input);
+	if (dev->keypad_input)
+		input_unregister_device(dev->keypad_input);
 }
 
 static int projector_function_set_alt(struct usb_function *f,

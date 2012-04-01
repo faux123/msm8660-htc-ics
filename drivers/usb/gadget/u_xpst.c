@@ -367,7 +367,7 @@ static long htc_diag_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		diag_smd_enable(driver->ch, "diag_ioctl", tmp_value);
 #if defined(CONFIG_MACH_MECHA)
 		/* internal hub*/
-		smsc251x_mdm_port_sw(tmp_value);
+		/*smsc251x_mdm_port_sw(tmp_value);*/
 #endif
 		/* force diag_read to return error when disable diag */
 		if (tmp_value == 0)
@@ -548,6 +548,12 @@ static int htc_diag_open(struct inode *ip, struct file *fp)
 
 	DIAG_INFO("%s:%s(parent:%s): tgid=%d\n", __func__,
 			current->comm, current->parent->comm, current->tgid);
+#ifdef CONFIG_MACH_HOLIDAY
+	if (!ctxt->ready) {
+		DIAG_INFO("%s: USB driver do not load\n", __func__);
+		return -EINVAL;
+	}
+#endif
 
 	mutex_lock(&ctxt->user_lock);
 
@@ -819,6 +825,12 @@ static int diag2arm9_open(struct inode *ip, struct file *fp)
 	int rc = 0;
 	int n;
 	DIAG_INFO("%s\n", __func__);
+#ifdef CONFIG_MACH_HOLIDAY
+	if (!ctxt->ready) {
+		DIAG_INFO("%s: USB driver do not load\n", __func__);
+		return -EINVAL;
+	}
+#endif
 	mutex_lock(&ctxt->diag2arm9_lock);
 	if (ctxt->diag2arm9_opened) {
 		pr_err("%s: already opened\n", __func__);
@@ -936,7 +948,7 @@ static ssize_t diag2arm9_write(struct file *fp, const char __user *buf,
 					return -ENOMEM;
 				}
 				memcpy(buf_9k, ctxt->DM_buf, writed);
-				msm_sdio_diag_write((void *)buf_9k, writed);
+				/*msm_sdio_diag_write((void *)buf_9k, writed);*/
 				buf_9k = NULL;
 			}
 #endif
@@ -981,7 +993,7 @@ static ssize_t diag2arm9_write(struct file *fp, const char __user *buf,
 					return -ENOMEM;
 				}
 				memcpy(buf_9k, ctxt->DM_buf, writed);
-				msm_sdio_diag_write((void *)buf_9k, writed);
+				/*msm_sdio_diag_write((void *)buf_9k, writed);*/
 				buf_9k = NULL;
 			}
 #endif
@@ -1013,7 +1025,7 @@ static ssize_t diag2arm9_write(struct file *fp, const char __user *buf,
 						mutex_unlock(&ctxt->diag2arm9_write_lock);
 						return -EINVAL;
 					}
-					msm_sdio_diag_write((void *)buf_9k, writed);
+					/*msm_sdio_diag_write((void *)buf_9k, writed);*/
 					buf_9k = NULL;
 				}
 #endif

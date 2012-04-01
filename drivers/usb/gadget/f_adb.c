@@ -29,6 +29,9 @@
 
 #define ADB_IOCTL_MAGIC 's'
 #define ADB_ERR_PAYLOAD_STUCK       _IOW(ADB_IOCTL_MAGIC, 0, unsigned)
+#ifdef CONFIG_MACH_HOLIDAY
+#define ADB_ATS_ENABLE       		_IOR(ADB_IOCTL_MAGIC, 1, unsigned)
+#endif
 
 #define ADB_BULK_BUFFER_SIZE           4096
 
@@ -117,7 +120,11 @@ static struct usb_descriptor_header *hs_adb_descs[] = {
 
 /* temporary variable used between adb_open() and adb_gadget_bind() */
 static struct adb_dev *_adb_dev;
+#ifdef CONFIG_MACH_HOLIDAY
+int board_get_usb_ats(void);
+#else
 int board_mfg_mode(void);
+#endif
 
 static inline struct adb_dev *func_to_adb(struct usb_function *f)
 {
@@ -476,6 +483,13 @@ static long adb_enable_ioctl(struct file *file,
 		printk(KERN_INFO "[USB] adbd read payload stuck (reset ADB)\n");
 		break;
 	}
+#ifdef CONFIG_MACH_HOLIDAY
+	case ADB_ATS_ENABLE: {
+		printk(KERN_INFO "[USB] ATS enable =  %d\n",board_get_usb_ats());
+		rc = put_user(board_get_usb_ats(),(int __user *)arg);
+		break;
+	}
+#endif
 	default:
 		rc = -EINVAL;
 	}
