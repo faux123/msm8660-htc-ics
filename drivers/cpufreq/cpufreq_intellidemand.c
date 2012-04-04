@@ -825,8 +825,6 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 #ifdef CONFIG_SEC_LIMIT_MAX_FREQ
 
-#include "../../kernel/power/power.h"
-
 enum {	
 	SET_MIN = 0,	
 	SET_MAX
@@ -838,17 +836,17 @@ enum {
 };
 
 #define SAMPLE_DURATION_MSEC	(10*1000) // 10 secs >= 10000 msec
-#define ACTIVE_DURATION_MSEC	(10*60*1000) // 10 mins
-#define INACTIVE_DURATION_MSEC	(2*60*1000) // 2 mins
-#define MAX_ACTIVE_FREQ_LIMIT	65 // %
-#define MAX_INACTIVE_FREQ_LIMIT	45 // %
-#define ACTIVE_MAX_FREQ			1728000 // 1.728GHz - set to max possible
-#define INACTIVE_MAX_FREQ		1080000	// 1.080GHZ
+#define ACTIVE_DURATION_MSEC	(5*60*1000) // 5 mins
+#define INACTIVE_DURATION_MSEC	(1*60*1000) // 1 mins
+#define MAX_ACTIVE_FREQ_LIMIT	35 // %
+#define MAX_INACTIVE_FREQ_LIMIT	25 // %
+#define ACTIVE_MAX_FREQ		1512000	// 1.512GHZ
+#define INACTIVE_MAX_FREQ	1080000	// 1.080GHZ
 
 #define NUM_ACTIVE_LOAD_ARRAY	(ACTIVE_DURATION_MSEC/SAMPLE_DURATION_MSEC)
 #define NUM_INACTIVE_LOAD_ARRAY	(INACTIVE_DURATION_MSEC/SAMPLE_DURATION_MSEC)
 
-static bool lmf_browser_state = false;
+bool lmf_browser_state = false;
 
 static unsigned long lmf_active_load_limit = MAX_ACTIVE_FREQ_LIMIT;
 static unsigned long lmf_inactive_load_limit = MAX_INACTIVE_FREQ_LIMIT;
@@ -866,7 +864,6 @@ static bool lmf_old_state = false;
 
 extern int cpufreq_set_limits(int cpu, unsigned int limit, unsigned int value);
 extern int cpufreq_set_limits_off(int cpu, unsigned int limit, unsigned int value);
-extern suspend_state_t get_suspend_state(void);
 
 void set_lmf_browser_state(bool onOff)
 {
@@ -919,7 +916,7 @@ static void do_dbs_timer(struct work_struct *work)
 		{
 			if (lmf_old_state == true)
 			{
-				pr_info("LMF: disabled\n");
+				pr_warn("LMF: disabled!\n");
 				lmf_old_state = false;
 			}
 
@@ -967,7 +964,7 @@ static void do_dbs_timer(struct work_struct *work)
 		{
 			if (lmf_old_state == false)
 			{
-				pr_info("LMF: enabled\n");
+				pr_warn("LMF: enabled!\n");
 				lmf_old_state = true;
 			}
 
@@ -1002,8 +999,8 @@ static void do_dbs_timer(struct work_struct *work)
 					msecs_limit_total += time_int;
 					load_limit_total[load_limit_index++] = average;
 
-					//printk("LMF: average = %ld.%ld, (%ld:%ld) (%ld:%ld) (%ld:%ld)\n", 
-					//	average, average_dec, time_int, time_int1, load_state_total0, load_state_total1, load_limit_index-1, msecs_limit_total);
+					pr_warn("LMF: average = %ld.%ld, (%ld:%ld) (%ld:%ld) (%ld:%ld)\n", 
+						average, average_dec, time_int, time_int1, load_state_total0, load_state_total1, load_limit_index-1, msecs_limit_total);
 
 					time_int = 0;
 					time_int1 = 0;
@@ -1027,7 +1024,7 @@ static void do_dbs_timer(struct work_struct *work)
 
 							average = total_load / NUM_ACTIVE_LOAD_ARRAY;
 							average_dec = total_load % NUM_ACTIVE_LOAD_ARRAY;
-							//printk("LMF:ACTIVE: total_avg = %ld.%ld\n", average, average_dec);
+							pr_warn("LMF:ACTIVE: total_avg = %ld.%ld\n", average, average_dec);
 
 							if (average > lmf_active_load_limit)
 							{
@@ -1067,7 +1064,7 @@ static void do_dbs_timer(struct work_struct *work)
 
 							average = total_load / NUM_INACTIVE_LOAD_ARRAY;
 							average_dec = total_load % NUM_INACTIVE_LOAD_ARRAY;
-							//printk("LMF:INACTIVE: total_avg = %ld.%ld\n", average, average_dec);
+							pr_warn("LMF:INACTIVE: total_avg = %ld.%ld\n", average, average_dec);
 
 							if (average < lmf_inactive_load_limit)
 							{
