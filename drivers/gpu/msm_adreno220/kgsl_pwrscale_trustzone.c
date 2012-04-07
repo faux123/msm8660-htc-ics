@@ -119,10 +119,6 @@ static void tz_wake(struct kgsl_device *device, struct kgsl_pwrscale *pwrscale)
 					     device->pwrctrl.thermal_pwrlevel);
 }
 
-#ifdef CONFIG_SEC_LIMIT_MAX_FREQ
-extern int lmf_browser_state;
-#endif
-
 static void tz_idle(struct kgsl_device *device, struct kgsl_pwrscale *pwrscale)
 {
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
@@ -144,9 +140,6 @@ static void tz_idle(struct kgsl_device *device, struct kgsl_pwrscale *pwrscale)
 	 * stop writing out values. */
 	if (pwr->active_pwrlevel == 0) {
 		if (priv->no_switch_cnt > SWITCH_OFF) {
-#ifdef CONFIG_SEC_LIMIT_MAX_FREQ
-			lmf_browser_state = false;
-#endif
 			priv->skip_cnt++;
 			if (priv->skip_cnt > SKIP_COUNTER) {
 				priv->no_switch_cnt -= SWITCH_OFF_RESET_TH;
@@ -165,11 +158,6 @@ static void tz_idle(struct kgsl_device *device, struct kgsl_pwrscale *pwrscale)
 	if (val)
 		kgsl_pwrctrl_pwrlevel_change(device,
 					     pwr->active_pwrlevel + val);
-
-#ifdef CONFIG_SEC_LIMIT_MAX_FREQ
-	if (pwr->active_pwrlevel >= 1 )
-		lmf_browser_state = true;
-#endif
 }
 
 static void tz_busy(struct kgsl_device *device,
