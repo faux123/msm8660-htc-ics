@@ -1044,7 +1044,7 @@ static unsigned char holiday_shrink_pwm(int val)
 	else
 		shrink_br = MAP_PWM_DEF + (val-ORIG_PWM_DEF)*(MAP_PWM_MAX-MAP_PWM_DEF)/(ORIG_PWM_MAX-ORIG_PWM_DEF);
 
-	PR_DISP_INFO("brightness orig = %d, transformed=%d\n", val, shrink_br);
+	//PR_DISP_INFO("brightness orig = %d, transformed=%d\n", val, shrink_br);
 
 	return shrink_br;
 }
