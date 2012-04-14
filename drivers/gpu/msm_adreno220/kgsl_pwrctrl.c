@@ -29,7 +29,7 @@
 #define UPDATE_BUSY		50
 
 #ifdef CONFIG_SEC_LIMIT_MAX_FREQ
-#define LMF_BROWSER_THRESHOLD	333000
+#define LMF_BROWSER_THRESHOLD	500000
 #endif
 
 struct clk_pair {
