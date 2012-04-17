@@ -1533,13 +1533,17 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 #ifdef CONFIG_EARLYSUSPEND
 static void cpufreq_intellidemand_early_suspend(struct early_suspend *h)
 {
+	mutex_lock(&dbs_mutex);
 	stored_sampling_rate = min_sampling_rate;
 	min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE * 2;
+	mutex_unlock(&dbs_mutex);
 }
 
 static void cpufreq_intellidemand_late_resume(struct early_suspend *h)
 {
+	mutex_lock(&dbs_mutex);
 	min_sampling_rate = stored_sampling_rate;
+	mutex_unlock(&dbs_mutex);
 }
 
 static struct early_suspend cpufreq_intellidemand_early_suspend_info = {
