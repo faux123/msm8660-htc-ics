@@ -2960,6 +2960,7 @@ CONFIG_CRYPTO_HW=y
 # CONFIG_CRYPTO_DEV_QCEDEV is not set
 # CONFIG_CRYPTO_DEV_OTA_CRYPTO is not set
 # CONFIG_BINARY_PRINTF is not set
+CONFIG_MSM_TZ_LOG=y
 
 #
 # Library routines

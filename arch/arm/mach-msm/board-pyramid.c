@@ -3396,6 +3396,7 @@ static struct platform_device *pyramid_devices[] __initdata = {
 #endif
 	&pm8058_leds,
 	&msm8660_device_watchdog,
+	&msm_device_tz_log,
 
 	&msm8660_cpu_idle_device,
 	&msm8660_msm_gov_device,

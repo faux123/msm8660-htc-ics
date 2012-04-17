@@ -6824,6 +6824,7 @@ static struct platform_device *holiday_devices[] __initdata = {
 	&msm_device_sdio_al,
 #endif
 	&msm8660_device_watchdog,
+	&msm_device_tz_log,
 };
 
 static struct memtype_reserve msm8x60_reserve_table[] __initdata = {
