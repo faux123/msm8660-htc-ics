@@ -58,7 +58,8 @@ struct kgsl_pwrctrl {
 };
 
 void kgsl_pwrctrl_irq(struct kgsl_device *device, int state);
-void kgsl_pwrctrl_clk(struct kgsl_device *device, int state);
+void kgsl_pwrctrl_clk(struct kgsl_device *device, int state, 
+	int requested_state);
 int kgsl_pwrctrl_init(struct kgsl_device *device);
 void kgsl_pwrctrl_close(struct kgsl_device *device);
 void kgsl_timer(unsigned long data);

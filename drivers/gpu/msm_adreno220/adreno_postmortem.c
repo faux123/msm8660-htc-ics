@@ -744,7 +744,7 @@ int adreno_postmortem_dump(struct kgsl_device *device, int manual)
 	kgsl_pwrctrl_stop_work(device);
 
 	/* Force on the clocks */
-	kgsl_pwrctrl_clk(device, KGSL_PWRFLAGS_ON);
+	kgsl_pwrctrl_wake(device);
 
 	adreno_dump(device);
 
