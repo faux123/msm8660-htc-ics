@@ -229,15 +229,12 @@ msm_pm_pa_to_va:
 	biceq	r3, r3, #0x400
 	mcreq	p15, 7, r3, c15, c0, 2
 #endif
-	stmfd   sp!, {lr}
-	bl      v7_flush_kern_cache_all
 #ifdef CONFIG_MSM_TRACE_ACROSS_PC
+	stmfd	sp!, {lr}
 	bl      etm_restore_reg_check
-#endif
-#ifdef CONFIG_MSM_DEBUG_ACROSS_PC
 	bl      msm_restore_jtag_debug
-#endif
 	ldmfd   sp!, {lr}
+#endif
 	mov     r0, #1
 	bx      lr
 	nop
