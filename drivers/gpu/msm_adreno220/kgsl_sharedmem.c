@@ -445,7 +445,7 @@ _kgsl_sharedmem_vmalloc(struct kgsl_memdesc *memdesc,
 	outer_cache_range_op_sg(memdesc->sg, memdesc->sglen,
 				KGSL_CACHE_OP_FLUSH);
 
-	kgsl_cache_range_op(memdesc, KGSL_CACHE_OP_INV);
+	kgsl_cache_range_op(memdesc, KGSL_CACHE_OP_FLUSH);
 
 	ret = kgsl_mmu_map(pagetable, memdesc, protflags);
 
