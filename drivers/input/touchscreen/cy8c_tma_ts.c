@@ -1051,9 +1051,7 @@ static irqreturn_t cy8c_ts_irq_thread(int irq, void *ptr)
 #endif
 			}
 		}
-		if ((ts->unlock_page) &&
-			((ts->p_finger_count > ts->finger_count) ||
-			(ts->finger_count == 4))) {
+		if (ts->unlock_page && ts->finger_count == 4) {
 			cy8c_reset_baseline();
 		}
 	} else {
