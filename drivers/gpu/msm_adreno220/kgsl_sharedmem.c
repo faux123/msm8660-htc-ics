@@ -13,6 +13,8 @@
 #include <linux/vmalloc.h>
 #include <linux/memory_alloc.h>
 #include <asm/cacheflush.h>
+#include <linux/slab.h>
+#include <linux/kmemleak.h>
 
 #include "kgsl.h"
 #include "kgsl_sharedmem.h"
@@ -150,7 +152,7 @@ static struct mem_entry_stats mem_stats[] = {
 #endif
 	MEM_ENTRY_STAT(KGSL_MEM_ENTRY_USER, user),
 #ifdef CONFIG_ION
-	MEM_ENTRY_STAT(KGSL_MEM_ENTRY_USER, ion),
+	MEM_ENTRY_STAT(KGSL_MEM_ENTRY_ION, ion),
 #endif
 };
 
@@ -282,7 +284,7 @@ static void outer_cache_range_op_sg(struct scatterlist *sg, int sglen, int op)
 	int i;
 
 	for_each_sg(sg, s, sglen, i) {
-		unsigned int paddr = sg_phys(s);
+		unsigned int paddr = kgsl_get_sg_pa(s);
 		_outer_cache_range_op(op, paddr, s->length);
 	}
 }
@@ -427,6 +429,8 @@ _kgsl_sharedmem_vmalloc(struct kgsl_memdesc *memdesc,
 		goto done;
 	}
 
+	kmemleak_not_leak(memdesc->sg);
+
 	memdesc->sglen = sglen;
 	sg_init_table(memdesc->sg, sglen);
 
@@ -441,7 +445,7 @@ _kgsl_sharedmem_vmalloc(struct kgsl_memdesc *memdesc,
 	outer_cache_range_op_sg(memdesc->sg, memdesc->sglen,
 				KGSL_CACHE_OP_FLUSH);
 
-	kgsl_cache_range_op(memdesc, KGSL_CACHE_OP_INV);
+	kgsl_cache_range_op(memdesc, KGSL_CACHE_OP_FLUSH);
 
 	ret = kgsl_mmu_map(pagetable, memdesc, protflags);
 
@@ -500,6 +504,8 @@ kgsl_sharedmem_vmalloc_user(struct kgsl_memdesc *memdesc,
 			      size, kgsl_driver.stats.vmalloc);
 		return -ENOMEM;
 	}
+
+	kmemleak_not_leak(ptr);
 
 	protflags = GSL_PT_PAGE_RV;
 	if (!(flags & KGSL_MEMFLAGS_GPUREADONLY))
@@ -638,13 +644,17 @@ kgsl_sharedmem_readl(const struct kgsl_memdesc *memdesc,
 			uint32_t *dst,
 			unsigned int offsetbytes)
 {
+	uint32_t *src;
 	BUG_ON(memdesc == NULL || memdesc->hostptr == NULL || dst == NULL);
-	WARN_ON(offsetbytes + sizeof(unsigned int) > memdesc->size);
+	WARN_ON(offsetbytes % sizeof(uint32_t) != 0);
+	if (offsetbytes % sizeof(uint32_t) != 0)
+		return -EINVAL;
 
-	if (offsetbytes + sizeof(unsigned int) > memdesc->size)
+	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
+	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
 		return -ERANGE;
-
-	*dst = readl_relaxed(memdesc->hostptr + offsetbytes);
+	src = (uint32_t *)(memdesc->hostptr + offsetbytes);
+	*dst = *src;
 	return 0;
 }
 EXPORT_SYMBOL(kgsl_sharedmem_readl);
@@ -654,12 +664,19 @@ kgsl_sharedmem_writel(const struct kgsl_memdesc *memdesc,
 			unsigned int offsetbytes,
 			uint32_t src)
 {
+	uint32_t *dst;
 	BUG_ON(memdesc == NULL || memdesc->hostptr == NULL);
-	BUG_ON(offsetbytes + sizeof(unsigned int) > memdesc->size);
+	WARN_ON(offsetbytes % sizeof(uint32_t) != 0);
+	if (offsetbytes % sizeof(uint32_t) != 0)
+		return -EINVAL;
 
+	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
+	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
+		return -ERANGE;
 	kgsl_cffdump_setmem(memdesc->gpuaddr + offsetbytes,
-		src, sizeof(uint));
-	writel_relaxed(src, memdesc->hostptr + offsetbytes);
+		src, sizeof(uint32_t));
+	dst = (uint32_t *)(memdesc->hostptr + offsetbytes);
+	*dst = src;
 	return 0;
 }
 EXPORT_SYMBOL(kgsl_sharedmem_writel);
