@@ -1334,8 +1334,13 @@ int dhdhtc_update_wifi_power_mode(int is_screen_off)
 		pm_type = PM_OFF;
 		dhdcdc_set_ioctl(dhd, 0, WLC_SET_PM, &pm_type, sizeof(pm_type));
 	} else {
-		if (is_screen_off && !dhdcdc_wifiLock)
-			pm_type = PM_MAX;
+		if (is_screen_off && !dhdcdc_wifiLock) {
+			if (wifi_fast)
+				/* force PM_FAST */
+				pm_type = PM_FAST;
+			else
+				pm_type = PM_MAX;
+		}
 		else
 			pm_type = PM_FAST;
 		printf("update pm: %s, wifiLock: %d\n", pm_type==1?"PM_MAX":"PM_FAST", dhdcdc_wifiLock);

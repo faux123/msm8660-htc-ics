@@ -465,6 +465,9 @@ extern uint dhd_watchdog_ms;
 extern uint dhd_console_ms;
 #endif /* defined(DHD_DEBUG) */
 
+/* user Wifi PM controls */
+extern bool wifi_fast;
+
 /* Use interrupts */
 extern uint dhd_intr;
 

@@ -360,6 +360,11 @@ uint dhd_console_ms = 0;
 module_param(dhd_console_ms, uint, 0);
 #endif /* DHD_DEBUG */
 
+#if defined(CONFIG_HAS_EARLYSUSPEND)
+bool wifi_fast = false;
+module_param(wifi_fast, bool, 0644);
+#endif
+
 /* ARP offload agent mode : Enable ARP Host Auto-Reply and ARP Peer Auto-Reply */
 uint dhd_arp_mode = 0xb;
 module_param(dhd_arp_mode, uint, 0);
