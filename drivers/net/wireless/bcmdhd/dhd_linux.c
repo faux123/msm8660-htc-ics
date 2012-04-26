@@ -339,6 +339,11 @@ uint dhd_console_ms = 250;
 module_param(dhd_console_ms, uint, 0644);
 #endif /* defined(DHD_DEBUG) */
 
+#if defined(CONFIG_HAS_EARLYSUSPEND)
+bool wifi_fast = false;
+module_param(wifi_fast, bool, 0644);
+#endif
+
 /* ARP offload agent mode : Enable ARP Host Auto-Reply and ARP Peer Auto-Reply */
 uint dhd_arp_mode = 0xb;
 module_param(dhd_arp_mode, uint, 0);
@@ -750,8 +755,13 @@ int dhdhtc_update_wifi_power_mode(int is_screen_off)
 		pm_type = PM_OFF;
 		dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&pm_type, sizeof(pm_type), TRUE, 0);
 	} else {
-		if (is_screen_off && !dhdcdc_wifiLock)
-			pm_type = PM_MAX;
+		if (is_screen_off && !dhdcdc_wifiLock) {
+			if (wifi_fast)
+				/* force PM_FAST */
+				pm_type = PM_FAST;
+			else
+				pm_type = PM_MAX;
+		}
 		else
 			pm_type = PM_FAST;
 		printf("update pm: %s, wifiLock: %d\n", pm_type==1?"PM_MAX":"PM_FAST", dhdcdc_wifiLock);
