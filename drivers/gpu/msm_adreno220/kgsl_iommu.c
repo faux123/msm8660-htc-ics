@@ -131,19 +131,19 @@ static int kgsl_get_iommu_ctxt(struct kgsl_iommu *iommu,
 				struct kgsl_device *device)
 {
 	int status = 0;
-	struct platform_device *pdev =
-		container_of(device->parentdev, struct platform_device, dev);
-	struct kgsl_device_platform_data *pdata_dev = pdev->dev.platform_data;
-	if (pdata_dev->iommu_user_ctx_name)
+	struct kgsl_device_platform_data *pdata =
+		kgsl_device_get_drvdata(device);
+
+	if (pdata->iommu_user_ctx_name)
 		iommu->iommu_user_dev = msm_iommu_get_ctx(
-					pdata_dev->iommu_user_ctx_name);
-	if (pdata_dev->iommu_priv_ctx_name)
+					pdata->iommu_user_ctx_name);
+	if (pdata->iommu_priv_ctx_name)
 		iommu->iommu_priv_dev = msm_iommu_get_ctx(
-					pdata_dev->iommu_priv_ctx_name);
+					pdata->iommu_priv_ctx_name);
 	if (!iommu->iommu_user_dev) {
 		KGSL_CORE_ERR("Failed to get user iommu dev handle for "
 				"device %s\n",
-				pdata_dev->iommu_user_ctx_name);
+				pdata->iommu_user_ctx_name);
 		status = -EINVAL;
 	}
 	return status;

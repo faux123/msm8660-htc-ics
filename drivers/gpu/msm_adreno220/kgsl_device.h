@@ -320,4 +320,13 @@ void kgsl_device_platform_remove(struct kgsl_device *device);
 
 const char *kgsl_pwrstate_to_str(unsigned int state);
 
+static inline struct kgsl_device_platform_data *
+kgsl_device_get_drvdata(struct kgsl_device *dev)
+{
+	struct platform_device *pdev =
+		container_of(dev->parentdev, struct platform_device, dev);
+
+	return pdev->dev.platform_data;
+}
+
 #endif  /* __KGSL_DEVICE_H */
