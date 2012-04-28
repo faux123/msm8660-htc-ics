@@ -1529,6 +1529,13 @@ config CPU_VOLTAGE_TABLE
 	bool "Enable CPU Voltage Table via sysfs for adjustements"
 	default n
 
+config CMDLINE_OPTIONS
+
+	bool "Enable cmdline options command parsing"
+	default n
+	help
+	This enables the parsing of cmdline options.
+
 if CPU_FREQ_MSM
 
 config MSM_CPU_FREQ_SET_MIN_MAX
