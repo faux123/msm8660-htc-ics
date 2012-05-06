@@ -182,8 +182,14 @@ retry:
 	if (value == 0)
 		pm8xxx_vib_set_off(vib);
 	else {
+
 		value = (value > vib->pdata->max_timeout_ms ?
 				 vib->pdata->max_timeout_ms : value);
+
+		/* Sense 4 haptic feedback fix */
+		if ((value == 20) || (value == 21))
+			value = 40;
+
 		pm8xxx_vib_set_on(vib);
 		hrtimer_start(&vib->vib_timer,
 			      ktime_set(value / 1000, (value % 1000) * 1000000),
