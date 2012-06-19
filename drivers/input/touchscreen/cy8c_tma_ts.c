@@ -27,6 +27,7 @@
 
 #ifdef CONFIG_TOUCHSCREEN_CYPRESS_SWEEP2WAKE
 #include <linux/leds-pm8058.h>
+#include <linux/s2w-switch.h>
 #endif
 
 #define CY8C_I2C_RETRY_TIMES 10
@@ -78,7 +79,6 @@ static int cy8c_reset_baseline(void);
 static DEFINE_MUTEX(cy8c_mutex);
 
 #ifdef CONFIG_TOUCHSCREEN_CYPRESS_SWEEP2WAKE
-int s2w_switch = 2;
 bool scr_suspended = false, exec_count = true;
 bool scr_on_touch = false, led_exec_count = false, barrier[2] = {false, false};
 static struct input_dev * sweep2wake_pwrdev;

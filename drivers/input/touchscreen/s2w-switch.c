@@ -52,7 +52,7 @@ int s2w_switch_init(void)
 
 	s2w_switch = 2; /* By default s2w is enabled with backlight disabled */
 
-        s2w_switch_kobj = kobject_create_and_add("s2w_switch", kernel_kobj);
+        s2w_switch_kobj = kobject_create_and_add("sweep2wake", kernel_kobj);
         if (!s2w_switch_kobj) {
                 return -ENOMEM;
         }
