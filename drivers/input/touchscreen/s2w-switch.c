@@ -18,8 +18,6 @@
 #include <linux/sysfs.h>
 #include <linux/s2w-switch.h>
 
-int s2w_switch;
-
 /* sysfs interface */
 static ssize_t s2w_switch_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -50,7 +48,7 @@ int s2w_switch_init(void)
 {
 	int retval;
 
-	s2w_switch = 2; /* By default s2w is enabled with backlight disabled */
+	/* s2w_switch = 2;  By default s2w is enabled with backlight disabled */
 
         s2w_switch_kobj = kobject_create_and_add("sweep2wake", kernel_kobj);
         if (!s2w_switch_kobj) {
