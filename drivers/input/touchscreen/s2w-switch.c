@@ -48,7 +48,7 @@ int s2w_switch_init(void)
 {
 	int retval;
 
-        s2w_switch_kobj = kobject_create_and_add("sweep2wake", kernel_kobj);
+        s2w_switch_kobj = kobject_create_and_add("sweep2wake", android_touch_kobj);
         if (!s2w_switch_kobj) {
                 return -ENOMEM;
         }

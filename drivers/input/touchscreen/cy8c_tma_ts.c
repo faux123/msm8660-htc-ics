@@ -636,7 +636,7 @@ static ssize_t cy8c_hw_reset(struct device *dev,
 static DEVICE_ATTR(hw_reset, S_IWUSR,
 	NULL, cy8c_hw_reset);
 
-static struct kobject *android_touch_kobj;
+struct kobject *android_touch_kobj;
 
 static int cy8c_touch_sysfs_init(void)
 {
