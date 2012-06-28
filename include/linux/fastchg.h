@@ -16,6 +16,14 @@
 #ifndef _LINUX_FASTCHG_H
 #define _LINUX_FASTCHG_H
 
+#define FAST_CHARGE_DISABLED 0
+#define FAST_CHARGE_FORCE_AC 1
+#define FAST_CHARGE_FORCE_AC_IF_NO_USB 2
+
+#define USB_ACC_NOT_DETECTED 0
+#define USB_ACC_DETECTED 1
+
 extern int force_fast_charge;
+extern int USB_peripheral_detected;
 
 #endif
