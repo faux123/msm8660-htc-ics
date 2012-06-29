@@ -699,6 +699,10 @@ static int msm_otg_reset(struct otg_transceiver *otg)
 	u32 ulpi_val = 0;
 	USBH_INFO("%s\n", __func__);
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	USB_porttype_detected = NO_USB_DETECTED; /* No USB plugged, clear fast charge detected port value */
+#endif
+
 	clk_enable(motg->clk);
 	if (motg->pdata->phy_reset)
 		ret = motg->pdata->phy_reset();
@@ -783,10 +787,6 @@ static int msm_otg_suspend(struct msm_otg *motg)
 		return 0;
 
 	USBH_INFO("%s\n", __func__);
-
-#ifdef CONFIG_FORCE_FAST_CHARGE
-	USB_porttype_detected = NO_USB_DETECTED; /* No USB plugged, clear fast charge detected port value */
-#endif
 
 	disable_irq(motg->irq);
 	session_active = (otg->host && !test_bit(ID, &motg->inputs)) ||
