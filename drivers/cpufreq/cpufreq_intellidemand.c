@@ -298,7 +298,7 @@ static ssize_t show_##file_name						\
 {									\
 	return sprintf(buf, "%u\n", dbs_tuners_ins.object);		\
 }
-show_one(sampling_rate, sampling_rate);
+//show_one(sampling_rate, sampling_rate);
 show_one(io_is_busy, io_is_busy);
 show_one(up_threshold, up_threshold);
 show_one(down_differential, down_differential);
@@ -358,6 +358,7 @@ static ssize_t show_powersave_bias
 	return snprintf(buf, PAGE_SIZE, "%d\n", dbs_tuners_ins.powersave_bias);
 }
 
+#if 0
 /**
  * update_sampling_rate - update sampling rate effective immediately if needed.
  * @new_rate: new sampling rate
@@ -425,6 +426,7 @@ static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
 	dbs_tuners_ins.sampling_rate = max(input, min_sampling_rate);
 	return count;
 }
+#endif
 
 #ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 static ssize_t store_two_phase_freq(struct kobject *a, struct attribute *b,
@@ -735,7 +737,7 @@ static ssize_t store_lmf_inactive_load(struct kobject *a, struct attribute *b,
 }
 #endif
 
-define_one_global_rw(sampling_rate);
+//define_one_global_rw(sampling_rate);
 define_one_global_rw(io_is_busy);
 define_one_global_rw(up_threshold);
 define_one_global_rw(down_differential);
@@ -756,7 +758,7 @@ define_one_global_rw(lmf_inactive_load);
 
 static struct attribute *dbs_attributes[] = {
 	&sampling_rate_min.attr,
-	&sampling_rate.attr,
+//	&sampling_rate.attr,
 	&up_threshold.attr,
 	&down_differential.attr,
 	&sampling_down_factor.attr,
