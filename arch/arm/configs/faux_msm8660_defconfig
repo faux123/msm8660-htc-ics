@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Linux/arm 3.0.35 Kernel Configuration
+# Linux/arm 3.0.38 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -423,6 +423,8 @@ CONFIG_WIFI_NVS_PROC_CREATE=y
 # CONFIG_ARCH_MSM_FLASHLIGHT is not set
 CONFIG_SURF_FFA_GPIO_KEYPAD=y
 CONFIG_MSM_SLEEP_TIME_OVERRIDE=y
+CONFIG_HTC_OFFMODE_ALARM=y
+CONFIG_HTC_QUICKBOOT_OFFMODE_ALARM=y
 CONFIG_MSM_MEMORY_LOW_POWER_MODE=y
 CONFIG_MSM_MEMORY_LOW_POWER_MODE_IDLE_ACTIVE=y
 # CONFIG_MSM_MEMORY_LOW_POWER_MODE_IDLE_RETENTION is not set
@@ -1277,18 +1279,19 @@ CONFIG_WLAN=y
 # CONFIG_USB_NET_RNDIS_WLAN is not set
 # CONFIG_LIBRA_SDIOIF is not set
 # CONFIG_ATH_COMMON is not set
-# CONFIG_BCM4329 is not set
-CONFIG_BCM4329_FW_PATH="/system/etc/firmware/fw_bcm4329.bin"
-CONFIG_BCM4329_NVRAM_PATH="/proc/calibration"
-# CONFIG_BCMDHD is not set
+CONFIG_BCMDHD=m
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/proc/calibration"
 # CONFIG_HOSTAP is not set
 # CONFIG_IWM is not set
 # CONFIG_LIBERTAS is not set
 # CONFIG_WL12XX_PLATFORM_DATA is not set
 # CONFIG_MWIFIEX is not set
 # CONFIG_QUALCOMM_WLAN is not set
+# CONFIG_BCM4329 is not set
 CONFIG_BCM4329_248=m
-# CONFIG_BCM4330B2 is not set
+CONFIG_BCM4329_FW_PATH="/system/etc/firmware/fw_bcm4329.bin"
+CONFIG_BCM4329_NVRAM_PATH="/proc/calibration"
 
 #
 # Enable WiMAX (Networking options) to see the WiMAX drivers
