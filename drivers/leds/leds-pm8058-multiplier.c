@@ -41,7 +41,18 @@ static ssize_t off_timer_multiplier_show(struct kobject *kobj, struct kobj_attri
 
 static ssize_t off_timer_multiplier_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-sscanf(buf, "%du", &off_timer_multiplier);
+
+int new_off_timer_multiplier;
+
+sscanf(buf, "%du", &new_off_timer_multiplier);
+
+if (new_off_timer_multiplier >= OFF_TIMER_INFINITE && new_off_timer_multiplier <= OFF_TIMER_MAX) {
+
+	/* update only if valid value provided */
+	off_timer_multiplier = new_off_timer_multiplier;
+
+}
+
 return count;
 }
 
