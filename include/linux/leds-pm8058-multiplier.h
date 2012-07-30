@@ -20,5 +20,6 @@ extern int off_timer_multiplier;
 
 #define OFF_TIMER_INFINITE 0
 #define OFF_TIMER_NORMAL 1
+#define OFF_TIMER_MAX 255
 
 #endif
