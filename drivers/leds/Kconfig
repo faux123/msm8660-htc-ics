@@ -476,6 +476,13 @@ config LEDS_PM8058
 	  This option enables support for LEDs connected to PM8058
 	  LED driver chips accessed via the SSBI bus and rpc.
 
+config LEDS_PM8058_multiplier
+	bool "LED off timer multiplier for PM8058"
+	depends on LEDS_PM8058
+	help
+	  This option allow to use a multiplier for the off timer of LED
+	  notifications (0 = infinite, else is normal time x multiplier.
+
 config LEDS_MAX8957_FLASH
 	tristate "FLASH LED Support for Maxim MAX8957 PMIC"
 	depends on MFD_MAX8957
