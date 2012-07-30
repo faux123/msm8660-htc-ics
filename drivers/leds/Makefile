@@ -49,6 +49,7 @@ obj-$(CONFIG_LEDS_ASIC3)		+= leds-asic3.o
 obj-$(CONFIG_LEDS_PM8029)		+= leds-pm8029.o
 #obj-$(CONFIG_LEDS_PM8058)		+= leds-pmic8058.o
 obj-$(CONFIG_LEDS_PM8058)		+= leds-pm8058.o
+obj-$(CONFIG_LEDS_PM8058_multiplier)	+= leds-pm8058-multiplier.o
 obj-$(CONFIG_LEDS_MAX8957_LPG)		+= leds-max8957-lpg.o
 obj-$(CONFIG_LEDS_QCIBL)		+= leds-qci-backlight.o
 obj-$(CONFIG_LEDS_MSM_PDM)		+= leds-msm-pdm.o

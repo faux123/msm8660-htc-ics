@@ -149,16 +149,14 @@ static void idlestats_sleep(struct kgsl_device *device,
 			struct kgsl_pwrscale *pwrscale)
 {
 	struct idlestats_priv *priv = pwrscale->priv;
+
+	/* HTC FIXME: msm_idle_stats_update_event() is not porting to master-msm-3.0 */
+#if 0
 	msm_idle_stats_update_event(&priv->idledev,
 		MSM_IDLE_STATS_EVENT_IDLE_TIMER_EXPIRED);
-}
-
-static void idlestats_wake(struct kgsl_device *device,
-			struct kgsl_pwrscale *pwrscale)
-{
-	/* Use highest perf level on wake-up from
-	   sleep for better performance */
-	kgsl_pwrctrl_pwrlevel_change(device, KGSL_PWRLEVEL_TURBO);
+#else
+	priv->idledev.stats->event |= MSM_IDLE_STATS_EVENT_IDLE_TIMER_EXPIRED;
+#endif
 }
 
 static int idlestats_init(struct kgsl_device *device,
@@ -226,6 +224,5 @@ struct kgsl_pwrscale_policy kgsl_pwrscale_policy_idlestats = {
 	.idle = idlestats_idle,
 	.busy = idlestats_busy,
 	.sleep = idlestats_sleep,
-	.wake = idlestats_wake,
 	.close = idlestats_close
 };
