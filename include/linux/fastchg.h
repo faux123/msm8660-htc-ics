@@ -39,4 +39,9 @@ extern int USB_peripheral_detected;
 
 extern int USB_porttype_detected;
 
+extern int is_fast_charge_forced;
+
+#define FAST_CHARGE_NOT_FORCED 0
+#define FAST_CHARGE_FORCED 1
+
 #endif

@@ -37,6 +37,11 @@
  *   6 - accessory charger adapter C
  *   7 - accessory charger adapter dock
  *  10 - nothing attached (default)
+ *
+ * Possible values for "is_fast_charge_forced" are :
+ *
+ *   0 - fast charging is currently not forced
+ *   1 - fast charging is currently forced
  */
 
 #include <linux/kobject.h>
@@ -46,6 +51,7 @@
 int force_fast_charge;
 int USB_peripheral_detected;
 int USB_porttype_detected;
+int is_fast_charge_forced;
 
 /* sysfs interface for "force_fast_charge" */
 static ssize_t force_fast_charge_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
@@ -145,6 +151,34 @@ static struct attribute_group USB_porttype_detected_attr_group = {
 .attrs = USB_porttype_detected_attrs,
 };
 
+/* sysfs interface for "is_fast_charge_forced" */
+static ssize_t is_fast_charge_forced_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	switch (is_fast_charge_forced) {
+		case FAST_CHARGE_NOT_FORCED:	return sprintf(buf, "No\n");
+		case FAST_CHARGE_FORCED:	return sprintf(buf, "Yes\n");
+		default:			return sprintf(buf, "something went wrong\n");
+	}
+}
+
+static ssize_t is_fast_charge_forced_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+/* no user change allowed */
+return count;
+}
+
+static struct kobj_attribute is_fast_charge_forced_attribute =
+__ATTR(is_fast_charge_forced, 0444, is_fast_charge_forced_show, is_fast_charge_forced_store);
+
+static struct attribute *is_fast_charge_forced_attrs[] = {
+&is_fast_charge_forced_attribute.attr,
+NULL,
+};
+
+static struct attribute_group is_fast_charge_forced_attr_group = {
+.attrs = is_fast_charge_forced_attrs,
+};
+
 /* Initialize fast charge sysfs folder */
 static struct kobject *force_fast_charge_kobj;
 
@@ -153,10 +187,12 @@ int force_fast_charge_init(void)
 	int force_fast_charge_retval;
 	int USB_peripheral_detected_retval;
 	int USB_porttype_detected_retval;
+	int is_fast_charge_forced_retval;
 
 	force_fast_charge = FAST_CHARGE_DISABLED; /* Forced fast charge disabled by default */
 	USB_peripheral_detected = USB_ACC_NOT_DETECTED; /* Consider no USB accessory detected so far */
 	USB_porttype_detected = NO_USB_DETECTED; /* Consider no USB port is yet detected */
+	is_fast_charge_forced = FAST_CHARGE_NOT_FORCED; /* Consider fast charge is not forced at start */
 
         force_fast_charge_kobj = kobject_create_and_add("fast_charge", kernel_kobj);
         if (!force_fast_charge_kobj) {
@@ -165,9 +201,10 @@ int force_fast_charge_init(void)
         force_fast_charge_retval = sysfs_create_group(force_fast_charge_kobj, &force_fast_charge_attr_group);
         USB_peripheral_detected_retval = sysfs_create_group(force_fast_charge_kobj, &USB_peripheral_detected_attr_group);
         USB_porttype_detected_retval = sysfs_create_group(force_fast_charge_kobj, &USB_porttype_detected_attr_group);
-        if (force_fast_charge_retval && USB_peripheral_detected_retval && USB_porttype_detected_retval)
+        is_fast_charge_forced_retval = sysfs_create_group(force_fast_charge_kobj, &is_fast_charge_forced_attr_group);
+        if (force_fast_charge_retval && USB_peripheral_detected_retval && USB_porttype_detected_retval && is_fast_charge_forced_retval)
                 kobject_put(force_fast_charge_kobj);
-        return (force_fast_charge_retval && USB_peripheral_detected_retval && USB_porttype_detected_retval);
+        return (force_fast_charge_retval && USB_peripheral_detected_retval && USB_porttype_detected_retval && is_fast_charge_forced_retval);
 }
 /* end sysfs interface */
 
