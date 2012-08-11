@@ -44,4 +44,10 @@ extern int is_fast_charge_forced;
 #define FAST_CHARGE_NOT_FORCED 0
 #define FAST_CHARGE_FORCED 1
 
+extern int current_charge_mode;
+
+#define CURRENT_CHARGE_MODE_DISCHARGING 0
+#define CURRENT_CHARGE_MODE_AC 1
+#define CURRENT_CHARGE_MODE_USB 2
+
 #endif
