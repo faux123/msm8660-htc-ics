@@ -2124,7 +2124,7 @@ restart:
 
 	throttle_vm_writeout(sc->gfp_mask);
 }
-
+#if 0
 /* Returns true if compaction should go ahead for a high-order request */
 static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
 {
@@ -2239,6 +2239,7 @@ static bool shrink_zones(int priority, struct zonelist *zonelist,
 
 	return aborted_reclaim;
 }
+#endif
 
 static bool zone_reclaimable(struct zone *zone)
 {
@@ -2291,7 +2292,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 	struct zoneref *z;
 	struct zone *zone;
 	unsigned long writeback_threshold;
-	bool aborted_reclaim;
+	//bool aborted_reclaim;
 
 	delayacct_freepages_start();
 
@@ -2302,7 +2303,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 		sc->nr_scanned = 0;
 		if (!priority)
 			disable_swap_token(sc->mem_cgroup);
-		aborted_reclaim = shrink_zones(priority, zonelist, sc);
+		//aborted_reclaim = shrink_zones(priority, zonelist, sc);
 
 		/*
 		 * Don't shrink slabs when reclaiming memory from
@@ -2368,8 +2369,8 @@ out:
 		return 0;
 
 	/* Aborted reclaim to try compaction? don't OOM, then */
-	if (aborted_reclaim)
-		return 1;
+	//if (aborted_reclaim)
+	//	return 1;
 
 	/* top priority shrink_zones still had more to do? don't OOM, then */
 	if (scanning_global_lru(sc) && !all_unreclaimable(zonelist, sc))
