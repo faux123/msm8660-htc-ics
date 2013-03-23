@@ -115,4 +115,17 @@ config CODEC_AIC3254
 	help
 	  AIC3254 Driver implemented by HTC.
 
+config SOUND_CONTROL_HAX_GPL
+	tristate "TPA2051D3 sound control hax"
+	default y
+	help
+	  FauxSound TPA2051D3 chipset sound control hacks
+
+config SND_CONTROL_HAS_BEATS
+	bool "Supports HTC Beats Headphones"
+	depends on SOUND_CONTROL_HAX_GPL
+	default n
+	help
+	  enable this for HTC Beats Headphone support
+
 endmenu
