@@ -20,6 +20,11 @@
 #include <linux/sysfs.h>
 #include <linux/kallsyms.h>
 
+#include <linux/mutex.h>
+
+static DEFINE_MUTEX(snd_hax_mutex);
+
+#define MAX_CMD_SZ	7
 extern char *htc_speaker_vol_control;
 extern char *htc_headset_vol_control;
 extern char *htc_ring_vol_control;
@@ -31,7 +36,7 @@ extern char *htc_beats_off_vol_control;
 #endif
 
 #define SOUND_CONTROL_MAJOR_VERSION	2
-#define SOUND_CONTROL_MINOR_VERSION	0
+#define SOUND_CONTROL_MINOR_VERSION	1
 
 #ifdef CONFIG_SND_CONTROL_HAS_BEATS
 static ssize_t beats_on_gain_show(struct kobject *kobj,
@@ -50,14 +55,22 @@ static ssize_t beats_on_gain_show(struct kobject *kobj,
 static ssize_t beats_on_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_beats_on_vol_control[0],
-		(int *)&htc_beats_on_vol_control[1],
-		(int *)&htc_beats_on_vol_control[2],
-		(int *)&htc_beats_on_vol_control[3],
-		(int *)&htc_beats_on_vol_control[4],
-		(int *)&htc_beats_on_vol_control[5],
-		(int *)&htc_beats_on_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_beats_on_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return (count);
 }
 
@@ -77,14 +90,22 @@ static ssize_t beats_off_gain_show(struct kobject *kobj,
 static ssize_t beats_off_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_beats_off_vol_control[0],
-		(int *)&htc_beats_off_vol_control[1],
-		(int *)&htc_beats_off_vol_control[2],
-		(int *)&htc_beats_off_vol_control[3],
-		(int *)&htc_beats_off_vol_control[4],
-		(int *)&htc_beats_off_vol_control[5],
-		(int *)&htc_beats_off_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_beats_off_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return (count);
 }
 #endif
@@ -105,14 +126,22 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 static ssize_t speaker_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_speaker_vol_control[0],
-		(int *)&htc_speaker_vol_control[1],
-		(int *)&htc_speaker_vol_control[2],
-		(int *)&htc_speaker_vol_control[3],
-		(int *)&htc_speaker_vol_control[4],
-		(int *)&htc_speaker_vol_control[5],
-		(int *)&htc_speaker_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_speaker_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return (count);
 }
 
@@ -132,14 +161,22 @@ static ssize_t headphone_gain_show(struct kobject *kobj,
 static ssize_t headphone_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_headset_vol_control[0],
-		(int *)&htc_headset_vol_control[1],
-		(int *)&htc_headset_vol_control[2],
-		(int *)&htc_headset_vol_control[3],
-		(int *)&htc_headset_vol_control[4],
-		(int *)&htc_headset_vol_control[5],
-		(int *)&htc_headset_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_headset_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return count;
 }
 
@@ -159,14 +196,22 @@ static ssize_t handset_gain_show(struct kobject *kobj,
 static ssize_t handset_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_handset_vol_control[0],
-		(int *)&htc_handset_vol_control[1],
-		(int *)&htc_handset_vol_control[2],
-		(int *)&htc_handset_vol_control[3],
-		(int *)&htc_handset_vol_control[4],
-		(int *)&htc_handset_vol_control[5],
-		(int *)&htc_handset_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_handset_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return count;
 }
 
@@ -186,14 +231,22 @@ static ssize_t ring_gain_show(struct kobject *kobj,
 static ssize_t ring_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_ring_vol_control[0],
-		(int *)&htc_ring_vol_control[1],
-		(int *)&htc_ring_vol_control[2],
-		(int *)&htc_ring_vol_control[3],
-		(int *)&htc_ring_vol_control[4],
-		(int *)&htc_ring_vol_control[5],
-		(int *)&htc_ring_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_ring_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return count;
 }
 
@@ -213,14 +266,22 @@ static ssize_t lineout_gain_show(struct kobject *kobj,
 static ssize_t lineout_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
+	int tmpIntArr[MAX_CMD_SZ];
+	int i;
+
 	sscanf(buf, "%d %d %d %d %d %d %d",
-		(int *)&htc_lineout_vol_control[0],
-		(int *)&htc_lineout_vol_control[1],
-		(int *)&htc_lineout_vol_control[2],
-		(int *)&htc_lineout_vol_control[3],
-		(int *)&htc_lineout_vol_control[4],
-		(int *)&htc_lineout_vol_control[5],
-		(int *)&htc_lineout_vol_control[6]);
+		&tmpIntArr[0],
+		&tmpIntArr[1],
+		&tmpIntArr[2],
+		&tmpIntArr[3],
+		&tmpIntArr[4],
+		&tmpIntArr[5],
+		&tmpIntArr[6]);
+	mutex_lock(&snd_hax_mutex);
+	for (i=0; i<MAX_CMD_SZ; i++) {
+		htc_lineout_vol_control[i] = (char)tmpIntArr[i];
+	}
+	mutex_unlock(&snd_hax_mutex);
 	return count;
 }
 
