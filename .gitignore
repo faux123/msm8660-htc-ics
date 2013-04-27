@@ -79,3 +79,13 @@ GTAGS
 *.orig
 *~
 \#*#
+
+#user files
+arch/arm/boot/compressed/ashldi3.S
+arch/arm/boot/compressed/piggy.xzkern
+Link to bcm4329_248
+Link to bcmdhd
+Link to bcmdhd_v
+Link to boot
+
+
