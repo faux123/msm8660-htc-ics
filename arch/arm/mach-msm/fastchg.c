@@ -98,7 +98,11 @@ static struct attribute_group force_fast_charge_attr_group = {
 /* sysfs interface for "USB_peripheral_detected" */
 static ssize_t USB_peripheral_detected_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-return sprintf(buf, "%d\n", USB_peripheral_detected);
+	switch (USB_peripheral_detected) {
+		case USB_ACC_NOT_DETECTED:	return sprintf(buf, "No\n");
+		case USB_ACC_DETECTED:		return sprintf(buf, "Yes\n");
+		default:			return sprintf(buf, "something went wrong\n");
+	}
 }
 
 static ssize_t USB_peripheral_detected_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
